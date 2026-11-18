@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "resultado.informado.v1",
+  "title": "ResultadoInformado (v1)",
+  "description": "Publicado por Partidas. Consumido por: Notificações. Routing key: resultado.informado.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "resultado.informado"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "partidas"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "partidaId",
+        "torneioId",
+        "informadoPor",
+        "placarA",
+        "placarB"
+      ],
+      "properties": {
+        "partidaId": {
+          "type": "string"
+        },
+        "torneioId": {
+          "type": "string"
+        },
+        "informadoPor": {
+          "type": "string"
+        },
+        "placarA": {
+          "type": "integer"
+        },
+        "placarB": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

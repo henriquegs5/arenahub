@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "equipe.criada.v1",
+  "title": "EquipeCriada (v1)",
+  "description": "Publicado por Equipes. Consumido por: Ranking. Routing key: equipe.criada.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "equipe.criada"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "equipes"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "equipeId",
+        "nome",
+        "capitaoId"
+      ],
+      "properties": {
+        "equipeId": {
+          "type": "string"
+        },
+        "nome": {
+          "type": "string"
+        },
+        "capitaoId": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

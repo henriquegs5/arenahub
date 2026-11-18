@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "equipe.validada.v1",
+  "title": "EquipeValidada (v1)",
+  "description": "Publicado por Equipes. Consumido por: Torneios, Ranking. Routing key: equipe.validada.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "equipe.validada"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "equipes"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "inscricaoId",
+        "torneioId",
+        "equipeId",
+        "nomeEquipe"
+      ],
+      "properties": {
+        "inscricaoId": {
+          "type": "string"
+        },
+        "torneioId": {
+          "type": "string"
+        },
+        "equipeId": {
+          "type": "string"
+        },
+        "nomeEquipe": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

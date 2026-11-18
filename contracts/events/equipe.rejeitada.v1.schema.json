@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "equipe.rejeitada.v1",
+  "title": "EquipeRejeitada (v1)",
+  "description": "Publicado por Equipes. Consumido por: Torneios. Routing key: equipe.rejeitada.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "equipe.rejeitada"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "equipes"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "inscricaoId",
+        "torneioId",
+        "equipeId",
+        "motivo"
+      ],
+      "properties": {
+        "inscricaoId": {
+          "type": "string"
+        },
+        "torneioId": {
+          "type": "string"
+        },
+        "equipeId": {
+          "type": "string"
+        },
+        "motivo": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "confrontos.gerados.v1",
+  "title": "ConfrontosGerados (v1)",
+  "description": "Publicado por Torneios. Consumido por: Partidas. Routing key: confrontos.gerados.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "confrontos.gerados"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "torneios"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "torneioId",
+        "formato",
+        "organizadorId",
+        "partidas"
+      ],
+      "properties": {
+        "torneioId": {
+          "type": "string"
+        },
+        "formato": {
+          "enum": [
+            "ELIMINACAO_SIMPLES",
+            "PONTOS_CORRIDOS"
+          ]
+        },
+        "partidas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "partidaId",
+              "rodada",
+              "equipeAId",
+              "equipeBId",
+              "capitaoAId",
+              "capitaoBId"
+            ],
+            "properties": {
+              "partidaId": {
+                "type": "string"
+              },
+              "rodada": {
+                "type": "integer"
+              },
+              "equipeAId": {
+                "type": "string"
+              },
+              "equipeBId": {
+                "type": "string"
+              },
+              "capitaoAId": {
+                "type": "string"
+              },
+              "capitaoBId": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "organizadorId": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

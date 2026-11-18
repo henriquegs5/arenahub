@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "equipe.atualizada.v1",
+  "title": "EquipeAtualizada (v1)",
+  "description": "Publicado por Equipes. Consumido por: Ranking. Routing key: equipe.atualizada.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "equipe.atualizada"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "equipes"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "equipeId",
+        "nome"
+      ],
+      "properties": {
+        "equipeId": {
+          "type": "string"
+        },
+        "nome": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

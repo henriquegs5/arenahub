@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "torneio.finalizado.v1",
+  "title": "TorneioFinalizado (v1)",
+  "description": "Publicado por Torneios. Consumido por: Ranking, Notificações. Routing key: torneio.finalizado.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "torneio.finalizado"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "torneios"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "torneioId",
+        "campeaoId",
+        "formato"
+      ],
+      "properties": {
+        "torneioId": {
+          "type": "string"
+        },
+        "campeaoId": {
+          "type": "string"
+        },
+        "formato": {
+          "enum": [
+            "ELIMINACAO_SIMPLES",
+            "PONTOS_CORRIDOS"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

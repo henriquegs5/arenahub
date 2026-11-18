@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "usuario.registrado.v1",
+  "title": "UsuarioRegistrado (v1)",
+  "description": "Publicado por Identidade. Consumido por: Notificações. Routing key: usuario.registrado.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "usuario.registrado"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "identidade"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "usuarioId",
+        "nome",
+        "email",
+        "papel"
+      ],
+      "properties": {
+        "usuarioId": {
+          "type": "string"
+        },
+        "nome": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "papel": {
+          "enum": [
+            "JOGADOR",
+            "ORGANIZADOR"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

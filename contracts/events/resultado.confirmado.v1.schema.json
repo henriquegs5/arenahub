@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "resultado.confirmado.v1",
+  "title": "ResultadoConfirmado (v1)",
+  "description": "Publicado por Partidas. Consumido por: Torneios, Ranking, Notificações. Routing key: resultado.confirmado.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "resultado.confirmado"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "partidas"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "partidaId",
+        "torneioId",
+        "rodada",
+        "equipeAId",
+        "equipeBId",
+        "placarA",
+        "placarB",
+        "vencedorId"
+      ],
+      "properties": {
+        "partidaId": {
+          "type": "string"
+        },
+        "torneioId": {
+          "type": "string"
+        },
+        "rodada": {
+          "type": "integer"
+        },
+        "equipeAId": {
+          "type": "string"
+        },
+        "equipeBId": {
+          "type": "string"
+        },
+        "placarA": {
+          "type": "integer"
+        },
+        "placarB": {
+          "type": "integer"
+        },
+        "vencedorId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

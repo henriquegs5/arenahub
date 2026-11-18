@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "inscricao.solicitada.v1",
+  "title": "InscricaoSolicitada (v1)",
+  "description": "Publicado por Torneios. Consumido por: Equipes. Routing key: inscricao.solicitada.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "inscricao.solicitada"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "torneios"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "inscricaoId",
+        "torneioId",
+        "equipeId",
+        "solicitanteId"
+      ],
+      "properties": {
+        "inscricaoId": {
+          "type": "string"
+        },
+        "torneioId": {
+          "type": "string"
+        },
+        "equipeId": {
+          "type": "string"
+        },
+        "solicitanteId": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
