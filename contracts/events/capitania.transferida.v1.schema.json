@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "capitania.transferida.v1",
+  "title": "CapitaniaTransferida (v1)",
+  "description": "A equipe passou a ter outro capitão. Torneios e Partidas atualizam quem pode agir pela equipe. Publicado por equipes. Consumido por: torneios, partidas, notificacoes. Routing key: capitania.transferida.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "capitania.transferida"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "equipes"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "equipeId",
+        "nomeEquipe",
+        "capitaoAnteriorId",
+        "capitaoAnteriorNome",
+        "capitaoNovoId",
+        "capitaoNovoNome",
+        "membros",
+        "destinatarios"
+      ],
+      "properties": {
+        "equipeId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "nomeEquipe": {
+          "type": "string"
+        },
+        "capitaoAnteriorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "capitaoAnteriorNome": {
+          "type": "string"
+        },
+        "capitaoNovoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "capitaoNovoNome": {
+          "type": "string"
+        },
+        "membros": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

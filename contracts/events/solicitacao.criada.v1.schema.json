@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "solicitacao.criada.v1",
+  "title": "SolicitacaoCriada (v1)",
+  "description": "Um jogador pediu para entrar numa equipe. Avisa o capitão. Publicado por equipes. Consumido por: notificacoes. Routing key: solicitacao.criada.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "solicitacao.criada"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "equipes"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "solicitacaoId",
+        "equipeId",
+        "nomeEquipe",
+        "usuarioId",
+        "nomeUsuario",
+        "capitaoId",
+        "destinatarios"
+      ],
+      "properties": {
+        "solicitacaoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "equipeId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "nomeEquipe": {
+          "type": "string"
+        },
+        "usuarioId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "nomeUsuario": {
+          "type": "string"
+        },
+        "capitaoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

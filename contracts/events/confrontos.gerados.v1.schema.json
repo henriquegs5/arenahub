@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "confrontos.gerados.v1",
   "title": "ConfrontosGerados (v1)",
-  "description": "Publicado por Torneios. Consumido por: Partidas. Routing key: confrontos.gerados.v1",
+  "description": "A chave (ou a rodada seguinte) foi sorteada. Partidas cria os jogos; Notificações avisa os integrantes. Publicado por torneios. Consumido por: partidas, notificacoes. Routing key: confrontos.gerados.v1",
   "type": "object",
   "required": [
     "eventId",
@@ -38,19 +38,30 @@
       "type": "object",
       "required": [
         "torneioId",
+        "nomeTorneio",
         "formato",
         "organizadorId",
-        "partidas"
+        "partidas",
+        "destinatarios"
       ],
       "properties": {
         "torneioId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "nomeTorneio": {
           "type": "string"
         },
         "formato": {
+          "type": "string",
           "enum": [
             "ELIMINACAO_SIMPLES",
             "PONTOS_CORRIDOS"
           ]
+        },
+        "organizadorId": {
+          "type": "string",
+          "format": "uuid"
         },
         "partidas": {
           "type": "array",
@@ -60,34 +71,60 @@
               "partidaId",
               "rodada",
               "equipeAId",
+              "nomeEquipeA",
               "equipeBId",
+              "nomeEquipeB",
               "capitaoAId",
-              "capitaoBId"
+              "capitaoBId",
+              "integrantes"
             ],
             "properties": {
               "partidaId": {
-                "type": "string"
+                "type": "string",
+                "format": "uuid"
               },
               "rodada": {
                 "type": "integer"
               },
               "equipeAId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "nomeEquipeA": {
                 "type": "string"
               },
               "equipeBId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "nomeEquipeB": {
                 "type": "string"
               },
               "capitaoAId": {
-                "type": "string"
+                "type": "string",
+                "format": "uuid"
               },
               "capitaoBId": {
-                "type": "string"
+                "type": "string",
+                "format": "uuid"
+              },
+              "integrantes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
               }
-            }
+            },
+            "additionalProperties": false
           }
         },
-        "organizadorId": {
-          "type": "string"
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
         }
       },
       "additionalProperties": false

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "usuario.removido.v1",
+  "title": "UsuarioRemovido (v1)",
+  "description": "Uma conta foi excluída. Dispara as compensações nos demais serviços. Publicado por identidade. Consumido por: equipes, torneios, notificacoes. Routing key: usuario.removido.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "usuario.removido"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "identidade"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "usuarioId",
+        "nome",
+        "removidoPor",
+        "destinatarios"
+      ],
+      "properties": {
+        "usuarioId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "nome": {
+          "type": "string"
+        },
+        "removidoPor": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

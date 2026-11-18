@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "resultado.confirmado.v1",
   "title": "ResultadoConfirmado (v1)",
-  "description": "Publicado por Partidas. Consumido por: Torneios, Ranking, Notificações. Routing key: resultado.confirmado.v1",
+  "description": "O placar virou oficial. O Torneios avança a chave e o Ranking soma os pontos. Publicado por partidas. Consumido por: torneios, ranking, notificacoes. Routing key: resultado.confirmado.v1",
   "type": "object",
   "required": [
     "eventId",
@@ -39,27 +39,43 @@
       "required": [
         "partidaId",
         "torneioId",
+        "nomeTorneio",
         "rodada",
         "equipeAId",
         "equipeBId",
+        "nomeEquipeA",
+        "nomeEquipeB",
         "placarA",
         "placarB",
-        "vencedorId"
+        "destinatarios"
       ],
       "properties": {
         "partidaId": {
-          "type": "string"
+          "type": "string",
+          "format": "uuid"
         },
         "torneioId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "nomeTorneio": {
           "type": "string"
         },
         "rodada": {
           "type": "integer"
         },
         "equipeAId": {
-          "type": "string"
+          "type": "string",
+          "format": "uuid"
         },
         "equipeBId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "nomeEquipeA": {
+          "type": "string"
+        },
+        "nomeEquipeB": {
           "type": "string"
         },
         "placarA": {
@@ -69,10 +85,32 @@
           "type": "integer"
         },
         "vencedorId": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
           ]
+        },
+        "nomeVencedor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
         }
       },
       "additionalProperties": false

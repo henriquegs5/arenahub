@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "resultado.contestado.v1",
   "title": "ResultadoContestado (v1)",
-  "description": "Publicado por Partidas. Consumido por: Notificações. Routing key: resultado.contestado.v1",
+  "description": "O capitão adversário contestou o placar informado; cabe ao organizador resolver. Publicado por partidas. Consumido por: notificacoes. Routing key: resultado.contestado.v1",
   "type": "object",
   "required": [
     "eventId",
@@ -39,21 +39,44 @@
       "required": [
         "partidaId",
         "torneioId",
+        "nomeTorneio",
+        "nomeEquipeA",
+        "nomeEquipeB",
         "contestadoPor",
-        "motivo"
+        "motivo",
+        "destinatarios"
       ],
       "properties": {
         "partidaId": {
-          "type": "string"
+          "type": "string",
+          "format": "uuid"
         },
         "torneioId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "nomeTorneio": {
+          "type": "string"
+        },
+        "nomeEquipeA": {
+          "type": "string"
+        },
+        "nomeEquipeB": {
           "type": "string"
         },
         "contestadoPor": {
-          "type": "string"
+          "type": "string",
+          "format": "uuid"
         },
         "motivo": {
           "type": "string"
+        },
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
         }
       },
       "additionalProperties": false

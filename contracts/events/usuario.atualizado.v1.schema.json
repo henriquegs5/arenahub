@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "usuario.atualizado.v1",
+  "title": "UsuarioAtualizado (v1)",
+  "description": "Nome ou papel de uma conta mudou. Permite que os outros serviços mantenham a cópia do nome em dia. Publicado por identidade. Consumido por: equipes, notificacoes. Routing key: usuario.atualizado.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "usuario.atualizado"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "identidade"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "usuarioId",
+        "nome",
+        "papel",
+        "destinatarios"
+      ],
+      "properties": {
+        "usuarioId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "nome": {
+          "type": "string"
+        },
+        "papel": {
+          "type": "string",
+          "enum": [
+            "JOGADOR",
+            "ORGANIZADOR",
+            "ADM"
+          ]
+        },
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

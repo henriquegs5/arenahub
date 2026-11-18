@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "inscricoes.abertas.v1",
+  "title": "InscricoesAbertas (v1)",
+  "description": "Um torneio passou a aceitar inscrições. Vira aviso geral (o publicador não conhece a lista de jogadores). Publicado por torneios. Consumido por: notificacoes. Routing key: inscricoes.abertas.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "inscricoes.abertas"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "torneios"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "torneioId",
+        "nomeTorneio",
+        "formato",
+        "maxEquipes",
+        "organizadorId",
+        "geral"
+      ],
+      "properties": {
+        "torneioId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "nomeTorneio": {
+          "type": "string"
+        },
+        "formato": {
+          "type": "string",
+          "enum": [
+            "ELIMINACAO_SIMPLES",
+            "PONTOS_CORRIDOS"
+          ]
+        },
+        "maxEquipes": {
+          "type": "integer"
+        },
+        "organizadorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "geral": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

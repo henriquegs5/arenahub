@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "partida.cancelada.v1",
+  "title": "PartidaCancelada (v1)",
+  "description": "A partida não será disputada (cancelada pelo organizador, equipe desfeita ou torneio cancelado). Publicado por partidas. Consumido por: torneios, ranking, notificacoes. Routing key: partida.cancelada.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "partida.cancelada"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "partidas"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "partidaId",
+        "torneioId",
+        "nomeTorneio",
+        "equipeAId",
+        "equipeBId",
+        "nomeEquipeA",
+        "nomeEquipeB",
+        "motivo",
+        "destinatarios"
+      ],
+      "properties": {
+        "partidaId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "torneioId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "nomeTorneio": {
+          "type": "string"
+        },
+        "equipeAId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "equipeBId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "nomeEquipeA": {
+          "type": "string"
+        },
+        "nomeEquipeB": {
+          "type": "string"
+        },
+        "motivo": {
+          "type": "string"
+        },
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

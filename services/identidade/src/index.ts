@@ -2,9 +2,10 @@ import express from "express";
 import { randomUUID } from "node:crypto";
 import { PORT, RABBITMQ_URL, SERVICE_NAME, SUBSCRIBES } from "./config";
 import { dbOk } from "./db";
-import { connectBroker, subscribe } from "./messaging";
+import { brokerOk, connectBroker, subscribe } from "./messaging";
+import { iniciarRelay, migrateOutbox, pendentes } from "./outbox";
 import { router } from "./routes";
-import { migrate } from "./usuarios";
+import { migrate, semearAdmin } from "./usuarios";
 
 const app = express();
 app.use(express.json());
@@ -19,18 +20,27 @@ app.use((req, res, next) => {
 
 app.get("/health", async (_req, res) => {
   const db = await dbOk();
-  res.status(db ? 200 : 503).json({ service: SERVICE_NAME, status: db ? "ok" : "degraded", db });
+  const outbox = db ? await pendentes().catch(() => -1) : -1;
+  res.status(db ? 200 : 503).json({
+    service: SERVICE_NAME,
+    status: db ? "ok" : "degraded",
+    db,
+    broker: brokerOk(),
+    eventosPendentes: outbox,
+  });
 });
 
 app.use("/", router);
 
 async function main() {
   await migrate();
+  await migrateOutbox();
+  await semearAdmin();
   await connectBroker(RABBITMQ_URL);
   await subscribe(SUBSCRIBES, async (event) => {
-    // TODO (Etapa 3): tratar o evento de forma idempotente.
     console.log(`[${SERVICE_NAME}] evento ${event.type}.v${event.version} corr=${event.correlationId}`);
   });
+  iniciarRelay();
   app.listen(PORT, () => console.log(`[${SERVICE_NAME}] porta ${PORT}`));
 }
 
