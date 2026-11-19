@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "evento.cancelado.v1",
+  "title": "EventoCancelado (v1)",
+  "description": "Um evento foi cancelado. Inicia a cadeia de compensacao: Ingressos invalida os ingressos e pede estorno, Pagamento estorna, Notificacoes avisa os compradores. Publicado por eventos. Consumido por: ingressos. Routing key: evento.cancelado.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "evento.cancelado"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "eventos"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "eventoId",
+        "nome",
+        "dataHora",
+        "local",
+        "motivo",
+        "organizadorId",
+        "destinatarios"
+      ],
+      "properties": {
+        "eventoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "nome": {
+          "type": "string"
+        },
+        "dataHora": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "local": {
+          "type": "string"
+        },
+        "motivo": {
+          "type": "string"
+        },
+        "organizadorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "IDs de usuario que devem receber aviso. Sai VAZIA: quem conhece os compradores e o servico de Ingressos, que republica o aviso nominal."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

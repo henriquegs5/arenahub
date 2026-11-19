@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "evento.alterado.v1",
+  "title": "EventoAlterado (v1)",
+  "description": "Nome, data ou local de um evento mudou (atualizacao de ultima hora). Publicado por eventos. Consumido por: ingressos, que conhece os compradores e publica o aviso nominal. Routing key: evento.alterado.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "evento.alterado"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "eventos"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "eventoId",
+        "nome",
+        "dataHora",
+        "local",
+        "alteracoes",
+        "organizadorId",
+        "destinatarios"
+      ],
+      "properties": {
+        "eventoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "nome": {
+          "type": "string"
+        },
+        "dataHora": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "local": {
+          "type": "string"
+        },
+        "alteracoes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "nome",
+              "data",
+              "local"
+            ]
+          },
+          "description": "Quais campos mudaram; so estes tres geram aviso."
+        },
+        "organizadorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "IDs de usuario que devem receber aviso. Sai VAZIA: quem conhece os compradores e o servico de Ingressos, que republica o aviso nominal."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

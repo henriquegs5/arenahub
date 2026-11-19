@@ -41,12 +41,14 @@ envolvidas no fato, então o próprio payload carrega `destinatarios` (IDs de us
 | `usuario.registrado.v1` | UsuarioRegistrado | Gateway | Notificacoes |
 | `usuario.atualizado.v1` | UsuarioAtualizado | Gateway | Notificacoes, Eventos, Ingressos |
 | `usuario.removido.v1` | UsuarioRemovido | Gateway | Eventos, Ingressos, Notificacoes |
+| `evento.alterado.v1` | EventoAlterado | Eventos | Ingressos |
+| `evento.cancelado.v1` | EventoCancelado | Eventos | Ingressos |
 
-> Os eventos do domínio de ingressos — `compra.solicitada`, `lugares.reservados`,
+> Os eventos da Saga da compra — `compra.solicitada`, `lugares.reservados`,
 > `reserva.recusada`, `pagamento.solicitado`, `pagamento.aprovado`, `pagamento.recusado`,
-> `ingresso.emitido`, `evento.alterado`, `evento.cancelado`, `estorno.concluido` — são
-> especificados e implementados nos lotes 2 a 5, cada um com o seu JSON Schema em
-> `contracts/events/` e a sua linha neste catálogo.
+> `ingresso.emitido`, `estorno.concluido` — são especificados e implementados nos
+> lotes 3 a 5, cada um com o seu JSON Schema em `contracts/events/` e a sua linha
+> neste catálogo.
 
 ## Publicados pelo Gateway
 
@@ -94,3 +96,42 @@ Publica: Gateway · Consome: Eventos, Ingressos, Notificacoes
 | `papel` | `PARTICIPANTE` / `ORGANIZADOR` / `ADM` (opcional; acrescentado na migração, compatível com a v1) |
 | `removidoPor` | UUID |
 | `destinatarios` | IDs dos usuários que devem receber aviso (pode vir vazia) |
+
+## Publicados por Eventos
+
+Os dois eventos abaixo saem **sem destinatários**. Quem sabe *quem comprou ingresso*
+para um evento é o serviço de **Ingressos**, não o de Eventos. Em vez de Eventos
+consultar Ingressos por HTTP — o que acoplaria os dois —, Ingressos consome estes
+eventos, resolve os titulares que só ele conhece e publica o aviso nominal.
+
+### EventoAlterado — `evento.alterado.v1`
+Nome, data ou local de um evento mudou. É a "atualização de última hora" citada pelo
+enunciado. Alterar apenas a descrição **não** gera evento: não muda nada para quem comprou.
+
+Publica: Eventos · Consome: Ingressos
+
+| Campo do payload | Descrição |
+|---|---|
+| `eventoId` | UUID |
+| `nome` | texto (valor já atualizado) |
+| `dataHora` | data/hora ISO-8601 (valor já atualizado) |
+| `local` | texto (valor já atualizado) |
+| `alteracoes` | lista com os campos que mudaram: `nome`, `data`, `local` |
+| `organizadorId` | UUID |
+| `destinatarios` | sai vazia; Ingressos republica o aviso nominal |
+
+### EventoCancelado — `evento.cancelado.v1`
+Um evento foi cancelado. Inicia a cadeia de compensação: Ingressos invalida os
+ingressos e pede o estorno, Pagamento estorna, Notificações avisa os compradores.
+
+Publica: Eventos · Consome: Ingressos
+
+| Campo do payload | Descrição |
+|---|---|
+| `eventoId` | UUID |
+| `nome` | texto |
+| `dataHora` | data/hora ISO-8601 |
+| `local` | texto |
+| `motivo` | texto informado pelo organizador |
+| `organizadorId` | UUID |
+| `destinatarios` | sai vazia; Ingressos republica o aviso nominal |
