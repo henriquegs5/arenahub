@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lugares.liberados.v1",
+  "title": "LugaresLiberados (v1)",
+  "description": "Confirmacao da COMPENSACAO: os lugares de um pedido voltaram ao estoque. So e publicado quando havia uma reserva ATIVA, entao repetir a compensacao nao devolve lugares duas vezes. Publicado por eventos. Consumido por: ninguem hoje (serve de rastro para a demonstracao e a auditoria). Routing key: lugares.liberados.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "lugares.liberados"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "eventos"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "pedidoId",
+        "eventoId",
+        "motivo",
+        "itens",
+        "destinatarios"
+      ],
+      "properties": {
+        "pedidoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "eventoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "motivo": {
+          "type": "string"
+        },
+        "itens": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "loteId",
+              "quantidade"
+            ],
+            "properties": {
+              "loteId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "quantidade": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "Sai vazia: evento interno da Saga, sem aviso ao usuario."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

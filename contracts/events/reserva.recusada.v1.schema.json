@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reserva.recusada.v1",
+  "title": "ReservaRecusada (v1)",
+  "description": "COMPENSACAO: nao foi possivel reservar os lugares (vendas fechadas, lote fora de vigencia ou capacidade esgotada). Nada foi reservado. Publicado por eventos. Consumido por: ingressos. Routing key: reserva.recusada.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "reserva.recusada"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "eventos"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "pedidoId",
+        "eventoId",
+        "compradorId",
+        "eventoNome",
+        "motivo",
+        "destinatarios"
+      ],
+      "properties": {
+        "pedidoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "eventoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "compradorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "eventoNome": {
+          "type": "string"
+        },
+        "motivo": {
+          "type": "string"
+        },
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "Sai vazia: evento interno da Saga, sem aviso ao usuario."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

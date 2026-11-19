@@ -6,6 +6,7 @@ import { brokerOk, connectBroker, subscribe } from "./messaging";
 import { iniciarRelay, migrateOutbox, pendentes } from "./outbox";
 import { migrate } from "./repositorio";
 import { router } from "./routes";
+import * as saga from "./saga";
 
 const app = express();
 app.use(express.json());
@@ -38,6 +39,12 @@ async function main() {
   await connectBroker(RABBITMQ_URL);
   await subscribe(SUBSCRIBES, async (event) => {
     console.log(`[${SERVICE_NAME}] evento ${event.type}.v${event.version} corr=${event.correlationId}`);
+    switch (event.type) {
+      case "compra.solicitada": return saga.tratarCompraSolicitada(event as never);
+      case "pedido.cancelado": return saga.tratarPedidoCancelado(event as never);
+      case "evento.cancelado": return saga.tratarEventoCancelado(event as never);
+      case "usuario.removido": return saga.tratarUsuarioRemovido(event as never);
+    }
   });
   iniciarRelay();
   app.listen(PORT, () => console.log(`[${SERVICE_NAME}] porta ${PORT}`));

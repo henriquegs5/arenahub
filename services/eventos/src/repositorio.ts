@@ -73,6 +73,21 @@ export async function migrate(): Promise<void> {
     );
     CREATE INDEX IF NOT EXISTS lotes_setor ON lotes (setor_id);
 
+    -- RESERVA POR PEDIDO. Sem esta tabela, "liberar lugares" seria um decremento
+    -- cego: repetir a compensacao devolveria lugares duas vezes, e um pedido que
+    -- expirou ANTES de reservar devolveria lugares que nunca saiu. Com ela, a
+    -- liberacao so age sobre uma reserva ATIVA, e exatamente uma vez.
+    CREATE TABLE IF NOT EXISTS reservas (
+      pedido_id   UUID PRIMARY KEY,
+      evento_id   UUID NOT NULL REFERENCES eventos(id) ON DELETE CASCADE,
+      itens       JSONB NOT NULL,
+      total_centavos INT NOT NULL DEFAULT 0,
+      status      TEXT NOT NULL,
+      criado_em   TIMESTAMPTZ NOT NULL DEFAULT now(),
+      liberado_em TIMESTAMPTZ
+    );
+    CREATE INDEX IF NOT EXISTS reservas_evento ON reservas (evento_id);
+
     CREATE TABLE IF NOT EXISTS eventos_processados (
       event_id      UUID PRIMARY KEY,
       processado_em TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -317,6 +332,49 @@ export async function liberarLugares(q: Queryable, loteId: string, quantidade: n
     "UPDATE lotes SET reservados = GREATEST(0, reservados - $2) WHERE id = $1",
     [loteId, quantidade]
   );
+}
+
+// ---------- reservas por pedido ----------
+
+export type StatusReserva = "ATIVA" | "LIBERADA";
+
+export interface ItemReservado { loteId: string; quantidade: number }
+
+export interface Reserva {
+  pedidoId: string;
+  eventoId: string;
+  itens: ItemReservado[];
+  totalCentavos: number;
+  status: StatusReserva;
+}
+
+const mapReserva = (r: any): Reserva => ({
+  pedidoId: r.pedido_id, eventoId: r.evento_id, itens: r.itens,
+  totalCentavos: r.total_centavos, status: r.status,
+});
+
+export async function buscarReserva(q: Queryable, pedidoId: string, travar = false): Promise<Reserva | null> {
+  const r = await q.query(`SELECT * FROM reservas WHERE pedido_id = $1${travar ? " FOR UPDATE" : ""}`, [pedidoId]);
+  return r.rows[0] ? mapReserva(r.rows[0]) : null;
+}
+
+export async function criarReserva(
+  q: Queryable, pedidoId: string, eventoId: string, itens: ItemReservado[], totalCentavos: number
+): Promise<void> {
+  await q.query(
+    "INSERT INTO reservas (pedido_id, evento_id, itens, total_centavos, status) VALUES ($1,$2,$3,$4,'ATIVA')",
+    [pedidoId, eventoId, JSON.stringify(itens), totalCentavos]
+  );
+}
+
+export async function marcarReservaLiberada(q: Queryable, pedidoId: string): Promise<void> {
+  await q.query("UPDATE reservas SET status = 'LIBERADA', liberado_em = now() WHERE pedido_id = $1", [pedidoId]);
+}
+
+/** Reservas ainda ativas de um evento — usadas ao cancelar o evento inteiro. */
+export async function reservasAtivasDoEvento(q: Queryable, eventoId: string): Promise<Reserva[]> {
+  const r = await q.query("SELECT * FROM reservas WHERE evento_id = $1 AND status = 'ATIVA' FOR UPDATE", [eventoId]);
+  return r.rows.map(mapReserva);
 }
 
 // ---------- idempotência ----------

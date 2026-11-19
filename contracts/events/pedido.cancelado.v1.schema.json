@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pedido.cancelado.v1",
+  "title": "PedidoCancelado (v1)",
+  "description": "COMPENSACAO: o pedido foi encerrado sem concluir (pagamento recusado, expiracao, cancelamento do comprador ou evento cancelado). Publicado por ingressos. Consumido por: eventos, que devolve os lugares ao estoque, e notificacoes. Routing key: pedido.cancelado.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "pedido.cancelado"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "ingressos"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "pedidoId",
+        "eventoId",
+        "compradorId",
+        "motivo",
+        "situacao",
+        "eventoNome",
+        "itens",
+        "destinatarios"
+      ],
+      "properties": {
+        "pedidoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "eventoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "compradorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "motivo": {
+          "type": "string"
+        },
+        "situacao": {
+          "type": "string",
+          "enum": [
+            "RECUSADO",
+            "EXPIRADO",
+            "CANCELADO"
+          ]
+        },
+        "eventoNome": {
+          "type": "string"
+        },
+        "itens": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "loteId",
+              "quantidade"
+            ],
+            "properties": {
+              "loteId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "quantidade": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "Contem o comprador: ele precisa saber o desfecho."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

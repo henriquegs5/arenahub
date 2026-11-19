@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lugares.reservados.v1",
+  "title": "LugaresReservados (v1)",
+  "description": "Passo 2 da Saga: os lugares foram reservados. Carrega os NOMES LEGIVEIS (evento, setor, lote) e os precos ja calculados pela Strategy de preco, para que ingressos e notificacoes nao precisem consultar este servico. Publicado por eventos. Consumido por: ingressos. Routing key: lugares.reservados.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "lugares.reservados"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "eventos"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "pedidoId",
+        "eventoId",
+        "compradorId",
+        "eventoNome",
+        "eventoDataHora",
+        "eventoLocal",
+        "itens",
+        "totalCentavos",
+        "destinatarios"
+      ],
+      "properties": {
+        "pedidoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "eventoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "compradorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "eventoNome": {
+          "type": "string"
+        },
+        "eventoDataHora": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "eventoLocal": {
+          "type": "string"
+        },
+        "itens": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "loteId",
+              "setorNome",
+              "loteNome",
+              "quantidade",
+              "politica",
+              "precoUnitarioCentavos"
+            ],
+            "properties": {
+              "loteId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "setorNome": {
+                "type": "string"
+              },
+              "loteNome": {
+                "type": "string"
+              },
+              "quantidade": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "politica": {
+                "type": "string",
+                "enum": [
+                  "INTEIRA",
+                  "MEIA",
+                  "PROMOCIONAL",
+                  "CORTESIA"
+                ]
+              },
+              "precoUnitarioCentavos": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Valor em CENTAVOS (inteiro). Nunca ponto flutuante."
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "totalCentavos": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Valor em CENTAVOS (inteiro). Nunca ponto flutuante."
+        },
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "Sai vazia: evento interno da Saga, sem aviso ao usuario."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

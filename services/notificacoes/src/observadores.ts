@@ -12,7 +12,15 @@ export class ObservadorAvisos implements Observador {
   constructor(private readonly notificador: Notificador) {}
 
   tipos() {
-    return ["usuario.registrado", "usuario.atualizado"];
+    return [
+      "usuario.registrado",
+      "usuario.atualizado",
+      "ingresso.emitido",
+      "pagamento.recusado",
+      "pedido.cancelado",
+      "estorno.concluido",
+      "ingressos.afetados",
+    ];
   }
 
   async atualizar(e: EventEnvelope) {

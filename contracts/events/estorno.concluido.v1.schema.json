@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "estorno.concluido.v1",
+  "title": "EstornoConcluido (v1)",
+  "description": "COMPENSACAO concluida: o valor foi estornado. automatico=false quando o meio nao estorna sozinho (boleto) e o reembolso fica registrado para tratamento manual. Publicado por pagamento. Consumido por: ingressos e notificacoes. Routing key: estorno.concluido.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "estorno.concluido"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "pagamento"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "pedidoId",
+        "transacaoId",
+        "eventoId",
+        "compradorId",
+        "valorCentavos",
+        "automatico",
+        "motivo",
+        "eventoNome",
+        "destinatarios"
+      ],
+      "properties": {
+        "pedidoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "transacaoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "eventoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "compradorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "valorCentavos": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Valor em CENTAVOS (inteiro). Nunca ponto flutuante."
+        },
+        "automatico": {
+          "type": "boolean"
+        },
+        "motivo": {
+          "type": "string"
+        },
+        "eventoNome": {
+          "type": "string"
+        },
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "Contem o comprador: ele precisa saber o desfecho."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ingressos.afetados.v1",
+  "title": "IngressosAfetados (v1)",
+  "description": "Os titulares de ingresso de um evento alterado precisam ser avisados. Publicado por ingressos porque SO ELE sabe quem comprou; o servico de eventos publica evento.alterado sem destinatarios, e este evento os resolve. Consumido por: notificacoes. Routing key: ingressos.afetados.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "ingressos.afetados"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "ingressos"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "eventoId",
+        "eventoNome",
+        "dataHora",
+        "local",
+        "alteracoes",
+        "quantidadeTitulares",
+        "destinatarios"
+      ],
+      "properties": {
+        "eventoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "eventoNome": {
+          "type": "string"
+        },
+        "dataHora": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "local": {
+          "type": "string"
+        },
+        "alteracoes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "nome",
+              "data",
+              "local"
+            ]
+          }
+        },
+        "quantidadeTitulares": {
+          "type": "integer"
+        },
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "Todos os titulares de ingresso valido do evento."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

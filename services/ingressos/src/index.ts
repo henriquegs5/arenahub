@@ -6,6 +6,7 @@ import { brokerOk, connectBroker, subscribe } from "./messaging";
 import { iniciarRelay, migrateOutbox, pendentes } from "./outbox";
 import { migrate } from "./repositorio";
 import { router } from "./routes";
+import * as servico from "./servico";
 
 const app = express();
 app.use(express.json());
@@ -38,8 +39,20 @@ async function main() {
   await connectBroker(RABBITMQ_URL);
   await subscribe(SUBSCRIBES, async (event) => {
     console.log(`[${SERVICE_NAME}] evento ${event.type}.v${event.version} corr=${event.correlationId}`);
+    switch (event.type) {
+      case "lugares.reservados": return servico.tratarLugaresReservados(event as never);
+      case "reserva.recusada": return servico.tratarReservaRecusada(event as never);
+      case "pagamento.aprovado": return servico.tratarPagamentoAprovado(event as never);
+      case "pagamento.recusado": return servico.tratarPagamentoRecusado(event as never);
+      case "estorno.concluido": return servico.tratarEstornoConcluido(event as never);
+      case "evento.cancelado": return servico.tratarEventoCancelado(event as never);
+      case "evento.alterado": return servico.tratarEventoAlterado(event as never);
+      case "usuario.removido": return servico.tratarUsuarioRemovido(event as never);
+    }
   });
   iniciarRelay();
+  // Saida para o pedido que trava: expira e dispara a compensacao.
+  servico.iniciarVarredor();
   app.listen(PORT, () => console.log(`[${SERVICE_NAME}] porta ${PORT}`));
 }
 

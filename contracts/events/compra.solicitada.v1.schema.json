@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "compra.solicitada.v1",
+  "title": "CompraSolicitada (v1)",
+  "description": "Passo 1 da Saga da compra: pedido criado como PENDENTE. Publicado por ingressos. Consumido por: eventos, que reserva os lugares. Routing key: compra.solicitada.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "compra.solicitada"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "ingressos"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "pedidoId",
+        "eventoId",
+        "compradorId",
+        "itens",
+        "destinatarios"
+      ],
+      "properties": {
+        "pedidoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "eventoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "compradorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "itens": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "loteId",
+              "quantidade",
+              "politica"
+            ],
+            "properties": {
+              "loteId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "quantidade": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "politica": {
+                "type": "string",
+                "enum": [
+                  "INTEIRA",
+                  "MEIA",
+                  "PROMOCIONAL",
+                  "CORTESIA"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "Sai vazia: evento interno da Saga, sem aviso ao usuario."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

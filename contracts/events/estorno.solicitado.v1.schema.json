@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "estorno.solicitado.v1",
+  "title": "EstornoSolicitado (v1)",
+  "description": "COMPENSACAO: um pedido ja pago foi cancelado e precisa de estorno. Publicado por ingressos. Consumido por: pagamento. Routing key: estorno.solicitado.v1",
+  "type": "object",
+  "required": [
+    "eventId",
+    "type",
+    "version",
+    "occurredAt",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "const": "estorno.solicitado"
+    },
+    "version": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "producer": {
+      "const": "ingressos"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "pedidoId",
+        "eventoId",
+        "compradorId",
+        "motivo",
+        "eventoNome",
+        "destinatarios"
+      ],
+      "properties": {
+        "pedidoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "eventoId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "compradorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "motivo": {
+          "type": "string"
+        },
+        "eventoNome": {
+          "type": "string"
+        },
+        "destinatarios": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "Sai vazia: evento interno da Saga, sem aviso ao usuario."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

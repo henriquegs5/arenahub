@@ -42,13 +42,22 @@ envolvidas no fato, então o próprio payload carrega `destinatarios` (IDs de us
 | `usuario.atualizado.v1` | UsuarioAtualizado | Gateway | Notificacoes, Eventos, Ingressos |
 | `usuario.removido.v1` | UsuarioRemovido | Gateway | Eventos, Ingressos, Notificacoes |
 | `evento.alterado.v1` | EventoAlterado | Eventos | Ingressos |
-| `evento.cancelado.v1` | EventoCancelado | Eventos | Ingressos |
+| `evento.cancelado.v1` | EventoCancelado | Eventos | Eventos, Ingressos |
+| `compra.solicitada.v1` | CompraSolicitada | Ingressos | Eventos |
+| `lugares.reservados.v1` | LugaresReservados | Eventos | Ingressos |
+| `reserva.recusada.v1` | ReservaRecusada | Eventos | Ingressos |
+| `pagamento.solicitado.v1` | PagamentoSolicitado | Ingressos | Pagamento |
+| `pagamento.aprovado.v1` | PagamentoAprovado | Pagamento | Ingressos |
+| `pagamento.recusado.v1` | PagamentoRecusado | Pagamento | Ingressos, Notificacoes |
+| `ingresso.emitido.v1` | IngressoEmitido | Ingressos | Notificacoes |
+| `pedido.cancelado.v1` | PedidoCancelado | Ingressos | Eventos, Notificacoes |
+| `estorno.solicitado.v1` | EstornoSolicitado | Ingressos | Pagamento |
+| `estorno.concluido.v1` | EstornoConcluido | Pagamento | Ingressos, Notificacoes |
+| `lugares.liberados.v1` | LugaresLiberados | Eventos | — (rastro de auditoria) |
+| `ingressos.afetados.v1` | IngressosAfetados | Ingressos | Notificacoes |
 
-> Os eventos da Saga da compra — `compra.solicitada`, `lugares.reservados`,
-> `reserva.recusada`, `pagamento.solicitado`, `pagamento.aprovado`, `pagamento.recusado`,
-> `ingresso.emitido`, `estorno.concluido` — são especificados e implementados nos
-> lotes 3 a 5, cada um com o seu JSON Schema em `contracts/events/` e a sua linha
-> neste catálogo.
+> A coerência entre este catálogo, os JSON Schemas e o que cada serviço declara
+> em `PUBLISHES`/`SUBSCRIBES` é conferida por `python scripts/check-contratos.py`.
 
 ## Publicados pelo Gateway
 
@@ -135,3 +144,237 @@ Publica: Eventos · Consome: Ingressos
 | `motivo` | texto informado pelo organizador |
 | `organizadorId` | UUID |
 | `destinatarios` | sai vazia; Ingressos republica o aviso nominal |
+
+## A Saga da compra
+
+```
+ Comprador
+    │  POST /api/ingressos/pedidos            → HTTP 202 (pedido PENDENTE)
+    ▼
+ INGRESSOS ──compra.solicitada──▶ EVENTOS
+                                     │ Chain of Responsibility:
+                                     │ vendas abertas? lote vigente? há lugar?
+                                     │ reserva ATÔMICA + grava `reservas`
+                    ┌────────────────┴────────────────┐
+         lugares.reservados                   reserva.recusada
+                    │                                 │
+                    ▼                                 ▼
+ INGRESSOS (RESERVADO)                    INGRESSOS (RECUSADO) ── fim
+    │  pagamento.solicitado
+    ▼
+ PAGAMENTO  (Adapter do provedor simulado + Strategy do meio)
+    ├── pagamento.aprovado ──▶ INGRESSOS emite ──ingresso.emitido──▶ NOTIFICAÇÕES
+    └── pagamento.recusado ──▶ INGRESSOS encerra o pedido
+                                   │  pedido.cancelado
+                                   ▼
+                               EVENTOS devolve os lugares ──lugares.liberados──▶
+```
+
+### Compensação
+
+Toda compensação passa por `pedido.cancelado` (devolve lugares) e, quando já
+houve cobrança aprovada, por `estorno.solicitado` (devolve o dinheiro). O mesmo
+caminho serve para **pagamento recusado**, **expiração**, **cancelamento pelo
+comprador** e **cancelamento do evento** — muda só o motivo.
+
+### Expiração: a saída para o pedido que trava
+
+Um pedido pode ficar preso porque uma resposta da Saga se perdeu ou porque o
+serviço de Pagamento está fora do ar. Sem saída, os lugares ficariam reservados
+para sempre e o evento esgotaria sem ter vendido.
+
+O serviço de Ingressos roda um **varredor** (`PEDIDO_EXPIRA_SEGUNDOS`, padrão
+120s) que encerra os pedidos vencidos e publica `pedido.cancelado`. Ele vive
+dentro do próprio serviço e **não depende de Pagamento**: com o pagamento
+parado, o pedido expira do mesmo jeito e os lugares voltam ao estoque.
+
+Pedidos em `PAGO` ficam de fora: dinheiro que já entrou se resolve concluindo a
+emissão, nunca expirando.
+
+### Idempotência das compensações
+
+Além do `eventos_processados` de cada serviço, cada compensação tem uma defesa
+no próprio dado:
+
+| Compensação | O que a torna idempotente |
+|---|---|
+| Liberar lugares | Tabela `reservas` em Eventos: só libera uma reserva `ATIVA`, e a marca `LIBERADA`. Repetir não devolve lugares duas vezes, e um pedido que expirou **antes** de reservar não devolve nada. |
+| Cobrar | `transacoes.pedido_id` é `UNIQUE` em Pagamento. Reentrega não cobra de novo: republica o desfecho já decidido. |
+| Estornar | Transação já `ESTORNADO` não é estornada outra vez; pedido sem cobrança aprovada não gera movimento. |
+| Encerrar pedido | O State recusa a transição a partir de um estado final, e o comando é ignorado. |
+| Validar entrada | `UPDATE ... WHERE status = 'EMITIDO'`: a segunda leitura do mesmo QR não passa. |
+
+## Publicados por Ingressos
+
+### CompraSolicitada — `compra.solicitada.v1`
+Passo 1 da Saga: o pedido nasce `PENDENTE`.
+
+Publica: Ingressos · Consome: Eventos
+
+| Campo do payload | Descrição |
+|---|---|
+| `pedidoId`, `eventoId`, `compradorId` | UUID |
+| `itens` | lista de `{loteId, quantidade, politica}` |
+| `destinatarios` | vazia (evento interno da Saga) |
+
+### PagamentoSolicitado — `pagamento.solicitado.v1`
+Passo 3: lugares reservados, cobrança pedida.
+
+**Segurança:** trafega apenas `referenciaPagamento`, um token opaco. Número de
+cartão, CVV e validade nunca entram neste sistema.
+
+Publica: Ingressos · Consome: Pagamento
+
+| Campo do payload | Descrição |
+|---|---|
+| `pedidoId`, `eventoId`, `compradorId` | UUID |
+| `valorCentavos` | inteiro, em centavos |
+| `meio` | `PIX` / `CARTAO_CREDITO` / `BOLETO` / `CARTAO_RECUSADO` |
+| `referenciaPagamento` | token opaco do meio de pagamento |
+| `eventoNome` | nome legível, para o aviso |
+| `destinatarios` | vazia |
+
+### IngressoEmitido — `ingresso.emitido.v1`
+Passo 5: pagamento aprovado e ingressos digitais emitidos.
+
+Publica: Ingressos · Consome: Notificacoes
+
+| Campo do payload | Descrição |
+|---|---|
+| `pedidoId`, `eventoId`, `compradorId` | UUID |
+| `eventoNome`, `eventoDataHora`, `eventoLocal` | nomes legíveis, para o aviso |
+| `totalCentavos` | inteiro, em centavos |
+| `ingressos` | lista de `{ingressoId, codigo, setorNome, loteNome, politica}` |
+| `destinatarios` | o comprador |
+
+### PedidoCancelado — `pedido.cancelado.v1`
+Compensação: o pedido foi encerrado sem concluir.
+
+Publica: Ingressos · Consome: Eventos (devolve os lugares), Notificacoes
+
+| Campo do payload | Descrição |
+|---|---|
+| `pedidoId`, `eventoId`, `compradorId` | UUID |
+| `motivo` | texto |
+| `situacao` | `RECUSADO` / `EXPIRADO` / `CANCELADO` |
+| `eventoNome` | nome legível |
+| `itens` | lista de `{loteId, quantidade}` a devolver |
+| `destinatarios` | o comprador |
+
+### EstornoSolicitado — `estorno.solicitado.v1`
+Compensação: um pedido já pago foi cancelado e precisa de estorno.
+
+Publica: Ingressos · Consome: Pagamento
+
+| Campo do payload | Descrição |
+|---|---|
+| `pedidoId`, `eventoId`, `compradorId` | UUID |
+| `motivo`, `eventoNome` | texto |
+| `destinatarios` | vazia |
+
+### IngressosAfetados — `ingressos.afetados.v1`
+Os titulares de ingresso de um evento alterado precisam ser avisados.
+
+**Por que existe:** o serviço de Eventos publica `evento.alterado` **sem
+destinatários**, porque não sabe quem comprou. Ingressos sabe, e é ele quem
+resolve a lista. Assim nenhum serviço precisa consultar o outro.
+
+Publica: Ingressos · Consome: Notificacoes
+
+| Campo do payload | Descrição |
+|---|---|
+| `eventoId` | UUID |
+| `eventoNome`, `dataHora`, `local` | valores já atualizados |
+| `alteracoes` | `nome`, `data`, `local` |
+| `quantidadeTitulares` | inteiro |
+| `destinatarios` | todos os titulares de ingresso válido |
+
+## Publicados por Eventos (Saga)
+
+### LugaresReservados — `lugares.reservados.v1`
+Passo 2: os lugares foram reservados.
+
+Carrega os **nomes legíveis** (evento, setor, lote) e os **preços já calculados**
+pela Strategy de preço, para que Ingressos e Notificações não precisem consultar
+este serviço.
+
+Publica: Eventos · Consome: Ingressos
+
+| Campo do payload | Descrição |
+|---|---|
+| `pedidoId`, `eventoId`, `compradorId` | UUID |
+| `eventoNome`, `eventoDataHora`, `eventoLocal` | nomes legíveis |
+| `itens` | `{loteId, setorNome, loteNome, quantidade, politica, precoUnitarioCentavos}` |
+| `totalCentavos` | inteiro, em centavos |
+| `destinatarios` | vazia |
+
+### ReservaRecusada — `reserva.recusada.v1`
+Compensação: não foi possível reservar. **Nada** foi reservado.
+
+Publica: Eventos · Consome: Ingressos
+
+| Campo do payload | Descrição |
+|---|---|
+| `pedidoId`, `eventoId`, `compradorId` | UUID |
+| `eventoNome` | nome legível |
+| `motivo` | o elo da Chain que recusou |
+| `destinatarios` | vazia |
+
+### LugaresLiberados — `lugares.liberados.v1`
+Confirmação da compensação: os lugares voltaram ao estoque. Só é publicado
+quando havia uma reserva `ATIVA`, então repetir a compensação não devolve
+lugares duas vezes.
+
+Publica: Eventos · Consome: ninguém hoje — é rastro para a demonstração e a auditoria.
+
+| Campo do payload | Descrição |
+|---|---|
+| `pedidoId`, `eventoId` | UUID |
+| `motivo` | texto |
+| `itens` | lista de `{loteId, quantidade}` |
+| `destinatarios` | vazia |
+
+## Publicados por Pagamento
+
+### PagamentoAprovado — `pagamento.aprovado.v1`
+Passo 4: a cobrança foi autorizada.
+
+Publica: Pagamento · Consome: Ingressos
+
+| Campo do payload | Descrição |
+|---|---|
+| `pedidoId`, `transacaoId`, `eventoId`, `compradorId` | UUID |
+| `valorCentavos` | inteiro, em centavos |
+| `meio` | meio de pagamento |
+| `autorizacao` | código de autorização do provedor |
+| `destinatarios` | vazia |
+
+### PagamentoRecusado — `pagamento.recusado.v1`
+Compensação: a cobrança não foi autorizada.
+
+Publica: Pagamento · Consome: Ingressos, Notificacoes
+
+| Campo do payload | Descrição |
+|---|---|
+| `pedidoId`, `transacaoId`, `eventoId`, `compradorId` | UUID |
+| `valorCentavos` | inteiro, em centavos |
+| `meio` | meio de pagamento |
+| `motivo` | por que o provedor recusou |
+| `eventoNome` | nome legível |
+| `destinatarios` | o comprador |
+
+### EstornoConcluido — `estorno.concluido.v1`
+Compensação concluída: o valor foi estornado.
+
+`automatico: false` quando o meio não estorna sozinho (boleto); o reembolso fica
+registrado para tratamento manual.
+
+Publica: Pagamento · Consome: Ingressos, Notificacoes
+
+| Campo do payload | Descrição |
+|---|---|
+| `pedidoId`, `transacaoId`, `eventoId`, `compradorId` | UUID |
+| `valorCentavos` | inteiro, em centavos |
+| `automatico` | booleano |
+| `motivo`, `eventoNome` | texto |
+| `destinatarios` | o comprador |

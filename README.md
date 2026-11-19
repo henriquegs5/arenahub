@@ -99,6 +99,93 @@ docker compose up --build
 > **Trocou o conjunto de serviços?** O `infra/postgres/init.sql` só roda com o
 > volume do Postgres vazio. Rode `docker compose down -v` antes de subir de novo.
 
+## A Saga da compra
+
+A compra responde **HTTP 202**, não 201: o pedido nasce `PENDENTE` e a Saga
+coreografada resolve o resto por eventos.
+
+```
+Ingressos  cria o pedido PENDENTE        → compra.solicitada
+Eventos    valida e RESERVA os lugares   → lugares.reservados | reserva.recusada
+Ingressos  pede a cobrança               → pagamento.solicitado
+Pagamento  processa                      → pagamento.aprovado | pagamento.recusado
+  aprovado → Ingressos emite os ingressos → ingresso.emitido → Notificações avisa
+  recusado → COMPENSAÇÃO: pedido.cancelado → Eventos devolve os lugares
+```
+
+O desenho completo, com os contratos de cada evento, está em
+`docs/02-contratos-eventos.md`.
+
+### Provocar uma recusa de pagamento (na demonstração)
+
+O provedor de pagamento é **simulado** e **determinístico** — não há sorteio.
+Há dois gatilhos, e qualquer um serve para mostrar a compensação ao vivo:
+
+| Gatilho | Como provocar | Efeito |
+|---|---|---|
+| **Meio de pagamento** | escolher **"Cartão de teste (recusa sempre)"** (`CARTAO_RECUSADO`) | recusa **qualquer** valor, sempre |
+| **Valor** | fazer o total terminar em **66 centavos** (R$ 6,66, R$ 80,66, R$ 120,66…) | recusa em **qualquer** meio de pagamento |
+
+O caminho mais direto é o primeiro: basta trocar o meio de pagamento na tela de
+compra. O segundo existe para mostrar que a regra vale para qualquer meio.
+
+A API declara os dois gatilhos em `GET /api/pagamento/meta/meios`, e a regra
+está em `services/pagamento/src/meios.ts` (`CENTAVOS_RECUSA`).
+
+Também dá para provocar uma **reserva recusada** (antes do pagamento): basta
+pedir mais lugares do que o lote tem, ou comprar de um evento cujas vendas não
+estejam abertas.
+
+### Pedido que trava: expiração
+
+Um pedido pode ficar preso porque uma resposta da Saga se perdeu ou porque o
+serviço de Pagamento está fora do ar. Sem saída, os lugares ficariam reservados
+para sempre e o evento esgotaria sem ter vendido.
+
+O serviço de Ingressos roda um **varredor** que encerra os pedidos vencidos e
+publica `pedido.cancelado`; o serviço de Eventos devolve os lugares ao estoque.
+O varredor vive dentro do próprio serviço de Ingressos e **não depende de
+Pagamento** — é por isso que funciona justamente no cenário em que Pagamento
+está parado.
+
+```
+PEDIDO_EXPIRA_SEGUNDOS   padrão 120s (curto, para caber na demonstração)
+EXPIRACAO_INTERVALO_MS   padrão 15000ms (de quanto em quanto o varredor roda)
+```
+
+Pedidos já `PAGO` nunca expiram: dinheiro que entrou se resolve concluindo a
+emissão.
+
+### Pagamento seguro
+
+O enunciado pede que as transações sejam processadas "de forma segura". Neste
+sistema isso significa, concretamente:
+
+- **Nenhum dado sensível de cartão entra no sistema.** Não existe coluna para
+  número, CVV ou validade em lugar nenhum — veja `services/pagamento/src/repositorio.ts`.
+- O que trafega e é gravado é apenas uma **referência opaca** (token) ao meio de
+  pagamento, como a que um provedor real devolve depois de tokenizar o cartão no
+  navegador do comprador.
+- A referência é **mascarada** em log e na API (`****1234`).
+- Uma validação da compra **recusa explicitamente** qualquer coisa que pareça um
+  número de cartão, para que um cliente mal escrito não vaze dado sensível para
+  dentro do sistema.
+
+### Idempotência das compensações
+
+Toda compensação pode chegar duas vezes — o broker entrega ao menos uma vez.
+Além da tabela `eventos_processados` de cada serviço, cada compensação tem uma
+defesa no próprio dado:
+
+- **Liberar lugares:** a tabela `reservas` do serviço de Eventos guarda o estado
+  por pedido. Só libera uma reserva `ATIVA`, e a marca `LIBERADA`. Repetir não
+  devolve lugares duas vezes, e um pedido que expirou **antes** de reservar não
+  devolve nada — um decremento cego corromperia o estoque.
+- **Cobrar:** `transacoes.pedido_id` é `UNIQUE`. Reentrega não cobra de novo.
+- **Estornar:** transação já `ESTORNADO` não é estornada outra vez.
+- **Validar entrada:** `UPDATE ... WHERE status = 'EMITIDO'` — a segunda leitura
+  do mesmo QR não passa.
+
 ## Tolerância a falhas (cenários do enunciado)
 
 ```
@@ -114,7 +201,9 @@ que está indisponível em vez de travar.
 ## Conferir se compila (sem Docker)
 
 ```
-./scripts/check-all.sh      # todos os serviços e o gateway
+./scripts/check-all.sh              # compila todos os serviços e o gateway
+python scripts/check-contratos.py   # código x JSON Schemas x catálogo de eventos
+cd services/eventos && npm test     # testes do domínio (Composite, State, Strategy)
 cd frontend && npm run build
 ```
 
