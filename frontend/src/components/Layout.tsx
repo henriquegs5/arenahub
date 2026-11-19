@@ -1,27 +1,44 @@
 import { useState } from "react";
-import { Activity, Bell, LayoutDashboard, LogOut, Menu, X } from "lucide-react";
+import {
+  Activity, Bell, CalendarDays, LayoutDashboard, LogOut, Menu, QrCode,
+  Receipt, ServerCog, Ticket, UserCircle, Users, X,
+} from "lucide-react";
 import { statusServicos } from "../api";
 import { usePolling } from "../hooks";
-import { ROTULO_PAPEL, StatusServico, Usuario } from "../types";
+import { Papel, ROTULO_PAPEL, StatusServico, Usuario } from "../types";
 import { iniciais } from "./ui";
 import logo from "../assets/logo-arenahub.png";
 
 /**
- * As páginas do novo domínio (catálogo de eventos, compra, meus ingressos,
- * validação na entrada, pedidos e administração) entram no lote 6, junto com os
- * serviços que as alimentam.
+ * Navegação por perfil. Cada item declara quem o vê; o backend confere de novo
+ * em toda chamada — esconder o item só evita oferecer o que seria recusado.
  */
 export const PAGINAS = [
-  { id: "visao", nome: "Visão geral", icone: LayoutDashboard },
-  { id: "avisos", nome: "Notificações", icone: Bell },
+  { id: "visao", nome: "Visão geral", icone: LayoutDashboard, papeis: ["PARTICIPANTE", "ORGANIZADOR", "ADM"] },
+  { id: "eventos", nome: "Eventos", icone: CalendarDays, papeis: ["PARTICIPANTE", "ORGANIZADOR", "ADM"] },
+  { id: "ingressos", nome: "Meus ingressos", icone: Ticket, papeis: ["PARTICIPANTE", "ADM"] },
+  { id: "pedidos", nome: "Pedidos", icone: Receipt, papeis: ["PARTICIPANTE", "ORGANIZADOR", "ADM"] },
+  { id: "validar", nome: "Validar entrada", icone: QrCode, papeis: ["ORGANIZADOR", "ADM"] },
+  { id: "avisos", nome: "Notificações", icone: Bell, papeis: ["PARTICIPANTE", "ORGANIZADOR", "ADM"] },
+  { id: "usuarios", nome: "Usuários", icone: Users, papeis: ["ADM"] },
+  { id: "sistema", nome: "Sistema", icone: ServerCog, papeis: ["ADM"] },
+  { id: "conta", nome: "Minha conta", icone: UserCircle, papeis: ["PARTICIPANTE", "ORGANIZADOR", "ADM"] },
 ] as const;
+
 export type PaginaId = (typeof PAGINAS)[number]["id"];
 
+export const paginasDe = (papel: Papel) =>
+  PAGINAS.filter((p) => (p.papeis as readonly string[]).includes(papel));
+
+/** O rótulo de "Pedidos" muda de sentido conforme quem olha. */
+export function nomeDaPagina(id: PaginaId, papel: Papel): string {
+  if (id === "pedidos") return papel === "ORGANIZADOR" ? "Vendas" : "Pedidos";
+  return PAGINAS.find((p) => p.id === id)!.nome;
+}
+
 const NOME_SERVICO: Record<string, string> = {
-  eventos: "Eventos",
-  ingressos: "Ingressos",
-  pagamento: "Pagamento",
-  notificacoes: "Notificações",
+  eventos: "Eventos", ingressos: "Ingressos",
+  pagamento: "Pagamento", notificacoes: "Notificações",
 };
 
 /**
@@ -30,14 +47,14 @@ const NOME_SERVICO: Record<string, string> = {
  * Fica recolhido atrás de um indicador discreto no cabeçalho: é informação de
  * diagnóstico, usada na demonstração de tolerância a falhas, e não navegação.
  */
-function Saude() {
+export function Saude() {
   const [st, setSt] = useState<Record<string, StatusServico> | null>(null);
   const [aberto, setAberto] = useState(false);
   usePolling(async () => { try { setSt(await statusServicos()); } catch { setSt(null); } }, 3000, []);
 
   const servicos = st ? Object.entries(st) : [];
-  const forts = servicos.filter(([, s]) => s.servico !== "no ar").length;
-  const tudoBem = !!st && forts === 0;
+  const fora = servicos.filter(([, s]) => s.servico !== "no ar").length;
+  const tudoBem = !!st && fora === 0;
 
   return (
     <div className="saude-caixa">
@@ -49,7 +66,7 @@ function Saude() {
       >
         <Activity size={14} />
         <span className="saude-chip-txt">
-          {!st ? "Gateway fora do ar" : tudoBem ? "Tudo no ar" : `${forts} serviço(s) fora`}
+          {!st ? "Gateway fora do ar" : tudoBem ? "Tudo no ar" : `${fora} serviço(s) fora`}
         </span>
       </button>
 
@@ -83,10 +100,14 @@ function Saude() {
 
 export function Layout(
   { eu, pagina, aoTrocar, aoSair, naoLidas, children }:
-  { eu: Usuario; pagina: PaginaId; aoTrocar: (p: PaginaId) => void; aoSair: () => void; naoLidas: number; children: React.ReactNode }
+  {
+    eu: Usuario; pagina: PaginaId; aoTrocar: (p: PaginaId) => void;
+    aoSair: () => void; naoLidas: number; children: React.ReactNode;
+  }
 ) {
   const [aberta, setAberta] = useState(false);
-  const atual = PAGINAS.find((p) => p.id === pagina)!;
+  const itens = paginasDe(eu.papel);
+  const atual = itens.find((p) => p.id === pagina) ?? itens[0];
   const ir = (id: PaginaId) => { aoTrocar(id); setAberta(false); };
 
   return (
@@ -98,10 +119,17 @@ export function Layout(
           <span className="marca-lema">Ingressos para e-sports</span>
         </div>
         <nav className="menu">
-          {PAGINAS.map((p) => (
-            <button key={p.id} className={pagina === p.id ? "ativo" : ""} onClick={() => ir(p.id)} aria-current={pagina === p.id}>
-              <p.icone size={17} />{p.nome}
-              {p.id === "avisos" && naoLidas > 0 && <span className="conta">{naoLidas > 99 ? "99+" : naoLidas}</span>}
+          {itens.map((p) => (
+            <button
+              key={p.id}
+              className={pagina === p.id ? "ativo" : ""}
+              onClick={() => ir(p.id)}
+              aria-current={pagina === p.id ? "page" : undefined}
+            >
+              <p.icone size={17} />{nomeDaPagina(p.id, eu.papel)}
+              {p.id === "avisos" && naoLidas > 0 && (
+                <span className="conta">{naoLidas > 99 ? "99+" : naoLidas}</span>
+              )}
             </button>
           ))}
         </nav>
@@ -110,21 +138,23 @@ export function Layout(
 
       <div className="conteudo">
         <header className="topo">
-          <button className="menu-movel" onClick={() => setAberta(true)} aria-label="Abrir menu"><Menu size={18} /></button>
-          <span className="titulo-pagina">{atual.nome}</span>
+          <button className="menu-movel" onClick={() => setAberta(true)} aria-label="Abrir menu">
+            <Menu size={18} />
+          </button>
+          <span className="titulo-pagina">{nomeDaPagina(atual.id, eu.papel)}</span>
           <span className="espaco" />
           <Saude />
-          <button className="sino" onClick={() => ir("avisos")} aria-label="Notificações">
+          <button className="sino" onClick={() => ir("avisos")} aria-label={`Notificações: ${naoLidas} não lidas`}>
             <Bell size={17} />
             {naoLidas > 0 && <span className="bolha">{naoLidas > 9 ? "9+" : naoLidas}</span>}
           </button>
-          <div className="usuario">
+          <button className="usuario" onClick={() => ir("conta")} title="Minha conta">
             <span className="avatar azul">{iniciais(eu.nome)}</span>
             <div className="usuario-txt">
               <b>{eu.nome}</b>
               <span>{ROTULO_PAPEL[eu.papel]}</span>
             </div>
-          </div>
+          </button>
           <button className="b-fantasma b-pequeno" onClick={aoSair}><LogOut size={15} />Sair</button>
         </header>
         <main className="area">{children}</main>

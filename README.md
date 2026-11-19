@@ -257,5 +257,6 @@ docs/                    planejamento, contratos e artefatos de entrega
 
 - O JWT dura 8 horas e **não é renovado**: numa sessão muito longa, é preciso
   entrar de novo. Aceitável para a demonstração.
-- O catálogo, a compra e as telas de administração ainda estão sendo migrados
-  para o novo domínio na interface; o backend já está completo.
+- A interface foi validada com os endpoints que ela usa e com o fluxo de compra
+  no navegador; as telas de administração (Usuários e Sistema), o check-in na
+  interface e o layout em celular não foram inspecionados visualmente.
