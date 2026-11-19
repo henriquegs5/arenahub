@@ -26,6 +26,12 @@ try { localStorage.removeItem("arenahub.avisosLidos"); } catch { /* ignora */ }
 function lerSessao(): Sessao | null {
   try {
     const s = JSON.parse(localStorage.getItem(CHAVE) ?? "null") as Sessao | null;
+    // Sessão de uma versão antiga (ex.: papel JOGADOR) não tem menu nem páginas:
+    // descarta e volta ao login, em vez de quebrar a renderização.
+    if (s && !["PARTICIPANTE", "ORGANIZADOR", "ADM"].includes(s.usuario?.papel)) {
+      localStorage.removeItem(CHAVE);
+      return null;
+    }
     if (s) setToken(s.token); // antes de qualquer tela buscar dados
     return s;
   } catch { return null; }
