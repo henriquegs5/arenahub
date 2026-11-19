@@ -147,6 +147,14 @@ Publica: Eventos · Consome: Ingressos
 
 ## A Saga da compra
 
+> **Serviço consumidor parado.** O broker retém `pagamento.solicitado` (ou qualquer
+> evento) na fila durável do consumidor e o entrega quando ele volta; a idempotência
+> por `eventos_processados` torna a reentrega segura. Se Pagamento ficar fora além do
+> prazo do pedido, o varredor de Ingressos expira o pedido (`pedido.cancelado`) e, se o
+> pagamento for aprovado depois, `estorno.solicitado` devolve o valor. Nenhum contrato
+> mudou no lote 7. Ver `docs/01-planejamento.md`, "Tolerância a falhas".
+
+
 ```
  Comprador
     │  POST /api/ingressos/pedidos            → HTTP 202 (pedido PENDENTE)

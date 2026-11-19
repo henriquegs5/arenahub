@@ -72,6 +72,22 @@ Circuit Breaker, Transactional Outbox, Dead Letter Queue.
 O cadastro público nunca cria um ADM; o administrador inicial vem de `ADMIN_EMAIL` /
 `ADMIN_SENHA`, de forma idempotente, na subida do Gateway.
 
+## Tolerância a falhas (validada em 19/11/2026)
+
+| Serviço parado | O que continua | O que a interface faz | Ao voltar |
+|---|---|---|---|
+| `pagamento` | Catálogo, ingressos já emitidos, check-in, cancelamentos | A tela de compra deixa de oferecer meios de pagamento, explica a indisponibilidade e bloqueia o botão; tenta de novo a cada 8 s e se libera sozinha. Em Pedidos, o pagamento aparece como indisponível e o resto do pedido segue visível | Pedido já feito (`AGUARDANDO_PAGAMENTO`) retoma pela fila e conclui. Se passar de `PEDIDO_EXPIRA_SEGUNDOS` (120 s), o pedido expira e libera os lugares; pagamento aprovado depois disso gera estorno |
+| `notificacoes` | Compra de ponta a ponta, tudo o mais | Tela de Avisos mostra que o serviço não respondeu e que as demais páginas seguem normais; o contador do sino fica quieto | Os eventos retidos na fila durável são entregues e os avisos aparecem |
+
+Mecanismos: Circuit Breaker no Gateway (resposta 502 com a mensagem do serviço fora),
+fila durável + Outbox (nada se perde), consumidores idempotentes (reentrega segura) e
+expiração independente do Pagamento (a reserva nunca fica presa).
+
+Teste feito com `docker compose stop` e `start`: com notificações parado, a compra foi
+a `CONCLUIDO` com 1 ingresso e a fila reteve 1 mensagem, entregue em segundos após o
+`start`; com pagamento parado, o catálogo respondeu 200, o pedido ficou em
+`AGUARDANDO_PAGAMENTO` e, após o `start`, concluiu com 1 ingresso.
+
 ## Demonstração (15–20 min)
 
 1. Cadastro e login (participante e organizador) — autenticação no Gateway.

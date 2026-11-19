@@ -229,7 +229,10 @@ docker compose stop notificacoes   # a compra funciona do início ao fim; os avi
 ```
 
 A fila é durável: com Notificações fora do ar, os eventos ficam retidos e são
-entregues quando o serviço volta. O Circuit Breaker do Gateway
+entregues quando o serviço volta. Com o Pagamento fora, a tela de compra explica a indisponibilidade e bloqueia a
+compra até ele voltar; um pedido já feito retoma sozinho ao voltar (ou expira e
+libera os lugares). Detalhes e resultado do teste em `docs/01-planejamento.md`.
+O Circuit Breaker do Gateway
 (`gateway/src/breaker.ts`) isola o serviço doente para que a interface explique o
 que está indisponível em vez de travar.
 

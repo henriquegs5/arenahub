@@ -29,10 +29,19 @@ export function Compra(
   const [meios, setMeios] = useState<MeiosPagamento | null>(null);
   const [pedidoId, setPedidoId] = useState<string | null>(null);
 
+  // null com pagamentoFora=false = ainda carregando; pagamentoFora=true = serviço indisponível.
+  const [pagamentoFora, setPagamentoFora] = useState(false);
+
   useEffect(() => {
-    api<MeiosPagamento>("GET", "pagamento/meta/meios")
-      .then(setMeios)
-      .catch(() => setMeios(null)); // Pagamento fora do ar: a tela explica adiante.
+    let vivo = true;
+    const carregar = () =>
+      api<MeiosPagamento>("GET", "pagamento/meta/meios")
+        .then((m) => { if (vivo) { setMeios(m); setPagamentoFora(false); } })
+        .catch(() => { if (vivo) { setMeios(null); setPagamentoFora(true); } });
+    carregar();
+    // Enquanto o Pagamento estiver fora, tenta de novo: a tela se recupera sozinha.
+    const t = setInterval(() => { if (vivo) carregar(); }, 8000);
+    return () => { vivo = false; clearInterval(t); };
   }, []);
 
   const lotes = useMemo(
@@ -161,13 +170,24 @@ export function Compra(
                 : "O sistema trabalha com uma referência (token) do meio de pagamento, nunca com o número do cartão."
             }
           >
-            <select id="meio-pgto" value={meio} onChange={(e) => setMeio(e.target.value as MeioPagamento)}>
+            <select
+              id="meio-pgto"
+              value={meio}
+              disabled={!meios}
+              onChange={(e) => setMeio(e.target.value as MeioPagamento)}
+            >
               {(meios?.meios ?? []).map((m) => (
                 <option key={m.valor} value={m.valor}>{m.rotulo}</option>
               ))}
-              {!meios && <option value="PIX">Pix</option>}
+              {!meios && <option value="">{pagamentoFora ? "Indisponível" : "Carregando..."}</option>}
             </select>
           </Campo>
+
+          {pagamentoFora && (
+            <Alerta
+              texto="O serviço de pagamento está indisponível no momento, então a compra não pode ser feita agora. O catálogo e os seus ingressos continuam funcionando. Esta tela tenta de novo sozinha e libera a compra quando o pagamento voltar."
+            />
+          )}
 
           <div className="lin mt" style={{ justifyContent: "space-between", alignItems: "baseline" }}>
             <span className="sec">{quantidade} ingresso(s)</span>
@@ -189,7 +209,7 @@ export function Compra(
           <button
             className="b-primario b-bloco mt"
             onClick={comprar}
-            disabled={acao.ocupado || quantidade === 0}
+            disabled={acao.ocupado || quantidade === 0 || !meios}
           >
             {acao.ocupado ? <Girando /> : <Ticket size={16} />}
             Comprar {quantidade > 0 && `· ${emReais(total)}`}
