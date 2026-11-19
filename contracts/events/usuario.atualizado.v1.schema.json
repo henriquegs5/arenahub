@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "usuario.atualizado.v1",
   "title": "UsuarioAtualizado (v1)",
-  "description": "Nome ou papel de uma conta mudou. Permite que os outros serviços mantenham a cópia do nome em dia. Publicado por identidade. Consumido por: equipes, notificacoes. Routing key: usuario.atualizado.v1",
+  "description": "Nome ou papel de uma conta mudou. Permite que os outros servicos mantenham a copia do nome em dia. Publicado por gateway. Consumido por: notificacoes, eventos, ingressos. Routing key: usuario.atualizado.v1",
   "type": "object",
   "required": [
     "eventId",
@@ -32,7 +32,7 @@
       "type": "string"
     },
     "producer": {
-      "const": "identidade"
+      "const": "gateway"
     },
     "payload": {
       "type": "object",
@@ -53,7 +53,7 @@
         "papel": {
           "type": "string",
           "enum": [
-            "JOGADOR",
+            "PARTICIPANTE",
             "ORGANIZADOR",
             "ADM"
           ]

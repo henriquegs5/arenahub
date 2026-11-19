@@ -2,9 +2,9 @@ import express from "express";
 import { randomUUID } from "node:crypto";
 import { PORT, RABBITMQ_URL, SERVICE_NAME, SUBSCRIBES } from "./config";
 import { dbOk } from "./db";
-import { connectBroker, subscribe } from "./messaging";
+import { brokerOk, connectBroker, subscribe } from "./messaging";
 import { CanalEmailAdapter, CanalTela, Notificador } from "./canais";
-import { ObservadorAvisos } from "./observadores";
+import { ObservadorAvisos, ObservadorUsuarioRemovido } from "./observadores";
 import { DespachanteEventos } from "./observer";
 import { marcarProcessado, desmarcarProcessado, migrate } from "./repositorio";
 import { router } from "./routes";
@@ -21,14 +21,24 @@ app.use((req, res, next) => {
 
 app.get("/health", async (_req, res) => {
   const db = await dbOk();
-  res.status(db ? 200 : 503).json({ service: SERVICE_NAME, status: db ? "ok" : "degraded", db });
+  res.status(db ? 200 : 503).json({
+    service: SERVICE_NAME,
+    status: db ? "ok" : "degraded",
+    db,
+    broker: brokerOk(),
+  });
 });
 
 app.use("/", router);
 
-const despachante = new DespachanteEventos().assinar(
-  new ObservadorAvisos(new Notificador([new CanalTela(), new CanalEmailAdapter()]))
-);
+/**
+ * Padrão GoF OBSERVER: o despachante recebe cada evento do broker e avisa apenas
+ * os observadores interessados. Comportamentos novos entram como observadores
+ * novos, sem mexer no consumidor de mensagens.
+ */
+const despachante = new DespachanteEventos()
+  .assinar(new ObservadorAvisos(new Notificador([new CanalTela(), new CanalEmailAdapter()])))
+  .assinar(new ObservadorUsuarioRemovido());
 
 async function main() {
   await migrate();

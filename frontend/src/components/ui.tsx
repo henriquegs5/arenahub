@@ -1,23 +1,35 @@
 import { ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, Info, Loader2, LucideIcon } from "lucide-react";
 
+/**
+ * Rótulos das máquinas de estado do domínio de ingressos.
+ * Evento: RASCUNHO → PUBLICADO → VENDAS_ABERTAS → VENDAS_ENCERRADAS → REALIZADO
+ * Pedido: PENDENTE → RESERVADO → PAGO → CONCLUIDO (ou CANCELADO)
+ * Ingresso: EMITIDO → UTILIZADO (ou CANCELADO / INVALIDADO)
+ */
 export const ROTULO_STATUS: Record<string, string> = {
-  RASCUNHO: "Rascunho", INSCRICOES_ABERTAS: "Inscrições abertas", EM_ANDAMENTO: "Em andamento",
-  FINALIZADO: "Finalizado", CANCELADO: "Cancelado",
-  PENDENTE: "Validando inscrição", CONFIRMADA: "Confirmada", REJEITADA: "Rejeitada",
-  AGENDADA: "Agendada", RESULTADO_INFORMADO: "Aguardando confirmação", CONTESTADA: "Contestada",
-};
-export const ROTULO_FORMATO: Record<string, string> = {
-  ELIMINACAO_SIMPLES: "Eliminação simples", PONTOS_CORRIDOS: "Pontos corridos",
+  // evento
+  RASCUNHO: "Rascunho", PUBLICADO: "Publicado", VENDAS_ABERTAS: "Vendas abertas",
+  VENDAS_ENCERRADAS: "Vendas encerradas", REALIZADO: "Realizado", CANCELADO: "Cancelado",
+  // pedido
+  PENDENTE: "Processando", RESERVADO: "Lugares reservados", AGUARDANDO_PAGAMENTO: "Aguardando pagamento",
+  PAGO: "Pago", CONCLUIDO: "Concluído", RECUSADO: "Pagamento recusado", EXPIRADO: "Expirado",
+  // ingresso
+  EMITIDO: "Emitido", UTILIZADO: "Utilizado", INVALIDADO: "Invalidado",
+  // pagamento
+  APROVADO: "Aprovado", ESTORNADO: "Estornado",
 };
 
 type Cor = "neutro" | "azul" | "vermelho" | "verde" | "ambar";
 const COR_STATUS: Record<string, Cor> = {
-  RASCUNHO: "neutro", INSCRICOES_ABERTAS: "azul", EM_ANDAMENTO: "ambar", FINALIZADO: "verde", CANCELADO: "vermelho",
-  PENDENTE: "ambar", CONFIRMADA: "verde", REJEITADA: "vermelho",
-  AGENDADA: "neutro", RESULTADO_INFORMADO: "azul", CONTESTADA: "vermelho",
+  RASCUNHO: "neutro", PUBLICADO: "azul", VENDAS_ABERTAS: "verde",
+  VENDAS_ENCERRADAS: "neutro", REALIZADO: "neutro", CANCELADO: "vermelho",
+  PENDENTE: "ambar", RESERVADO: "ambar", AGUARDANDO_PAGAMENTO: "ambar",
+  PAGO: "verde", CONCLUIDO: "verde", RECUSADO: "vermelho", EXPIRADO: "vermelho",
+  EMITIDO: "verde", UTILIZADO: "azul", INVALIDADO: "vermelho",
+  APROVADO: "verde", ESTORNADO: "ambar",
 };
-const PULSANTES = new Set(["EM_ANDAMENTO", "PENDENTE", "RESULTADO_INFORMADO"]);
+const PULSANTES = new Set(["PENDENTE", "RESERVADO", "AGUARDANDO_PAGAMENTO"]);
 
 export function Selo({ status, texto }: { status: string; texto?: string }) {
   return (

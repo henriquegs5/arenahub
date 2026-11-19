@@ -1,38 +1,85 @@
-# ArenaHub — Planejamento (Etapa 1)
+# ArenaHub — Planejamento
+
+Plataforma de gestão de eventos e venda de ingressos para e-sports e cultura gamer.
 
 ## Serviços e dono dos dados
+
+O enunciado exige **quatro microsserviços**, cada um em container Docker independente.
+
 | Serviço | Responsabilidade | Dados exclusivos |
 |---|---|---|
-| Identidade | Cadastro, login, JWT, papel (jogador/organizador) | usuários |
-| Equipes | Equipe, membros, capitão, elegibilidade | equipes, membros |
-| Torneios | Torneio, regras, inscrições, confrontos, avanço da chave | torneios, inscrições |
-| Partidas | Agenda, resultado, confirmação, contestação | partidas |
-| Ranking | Classificação por torneio e ranking geral | tabelas de pontos |
-| Notificações | Reage a eventos e registra avisos | notificações |
-| Gateway | Entrada única, JWT, Circuit Breaker | — |
+| Eventos | Cadastro, atualização e exclusão de eventos; data, local, capacidade; setores e lotes; reserva e liberação de lugares | eventos, setores, lotes |
+| Ingressos | Venda, emissão do ingresso digital, validação na entrada, cancelamento | pedidos, ingressos, histórico |
+| Pagamento | Cobrança e estorno, com provedor externo simulado | transações |
+| Notificações | Avisos ao participante, inclusive atualizações de última hora | notificações |
+| *Gateway* | *Infraestrutura*: entrada única, autenticação (JWT), Circuit Breaker | contas de usuário |
+| *Frontend* | *Apresentação*: interface React | — |
 
-## Saga de inscrição (coreografada)
-Torneios cria inscrição PENDENTE → `inscricao.solicitada` → Equipes valida → `equipe.validada` ou `equipe.rejeitada` → Torneios confirma, ou cancela e libera a vaga (compensação).
+Gateway e Frontend **não** são serviços de domínio. A autenticação foi absorvida pelo
+Gateway justamente para manter o número de microsserviços em quatro — justificativa em
+`README.md` e em `gateway/src/auth/rotas.ts`.
+
+## Saga da compra (coreografada, com compensação)
+
+```
+Comprador → Ingressos: cria pedido PENDENTE          → compra.solicitada
+Eventos:   verifica disponibilidade e reserva        → lugares.reservados | reserva.recusada
+Ingressos: solicita a cobrança                       → pagamento.solicitado
+Pagamento: processa                                  → pagamento.aprovado | pagamento.recusado
+  aprovado  → Ingressos emite o ingresso             → ingresso.emitido → Notificações avisa
+  recusado  → COMPENSAÇÃO: Eventos libera os lugares, o pedido vai a CANCELADO, o comprador é avisado
+```
+
+A resposta HTTP da compra é **202**: o processamento é assíncrono e o pedido nasce pendente.
+
+Cancelamento de evento dispara outra cadeia:
+`evento.cancelado` → Ingressos invalida os ingressos → Pagamento estorna → Notificações avisa todos os compradores.
 
 ## Máquinas de estado
-- Torneio: RASCUNHO → INSCRICOES_ABERTAS → EM_ANDAMENTO → FINALIZADO (CANCELADO antes de finalizar)
-- Partida: AGENDADA → RESULTADO_INFORMADO → CONFIRMADA | CONTESTADA → CONFIRMADA
-- Inscrição: PENDENTE → CONFIRMADA | REJEITADA
+
+- **Evento**: `RASCUNHO → PUBLICADO → VENDAS_ABERTAS → VENDAS_ENCERRADAS → REALIZADO`
+  (`CANCELADO` a partir dos anteriores)
+- **Pedido**: `PENDENTE → RESERVADO → AGUARDANDO_PAGAMENTO → PAGO → CONCLUIDO`
+  (`CANCELADO` por recusa, cancelamento ou expiração)
+- **Ingresso**: `EMITIDO → UTILIZADO` (`CANCELADO` / `INVALIDADO`)
+- **Circuito do Gateway**: `FECHADO → ABERTO → MEIO_ABERTO → FECHADO`
 
 ## Padrões GoF
-| Padrão | Serviço | Uso |
+
+| Padrão | Onde | Uso no domínio de ingressos |
 |---|---|---|
-| Strategy | Torneios, Ranking | Geração de confrontos por formato; desempate |
-| Factory Method | Torneios | Escolhe a Strategy pelo formato |
-| Composite | Torneios | Chave: rodada contém partidas |
-| State | Torneios, Partidas | Ciclo de vida |
-| Chain of Responsibility | Equipes | Validação de elegibilidade |
-| Command | Partidas | Informar, confirmar, contestar resultado |
-| Observer | Ranking, Notificações | Consumo de eventos |
-| Adapter | Notificações | Canal de aviso atrás de interface |
-| Facade / Proxy | Gateway | Entrada única, JWT, Circuit Breaker |
+| Strategy | Ingressos, Pagamento | Política de preço (inteira, meia, lote, cortesia) e meio de pagamento |
+| Factory Method | Ingressos, Pagamento | Cria a estratégia de preço ou de meio de pagamento |
+| Composite | Eventos | Evento → setores → lotes, agregando capacidade e disponibilidade |
+| State | Eventos, Ingressos, Gateway | Ciclo do evento, do pedido, do ingresso e do disjuntor |
+| Chain of Responsibility | Ingressos | Validações da compra: evento publicado, vendas abertas, lote vigente, capacidade, limite por comprador |
+| Command | Ingressos | Ações sobre o pedido (pagar, cancelar, estornar, validar entrada) com histórico |
+| Observer | Notificações, Ingressos, Pagamento | Despacho dos eventos nos consumidores |
+| Adapter | Pagamento, Notificações | Provedor de pagamento simulado e canais de aviso |
+| Facade + Proxy | Gateway | Entrada única, JWT, Circuit Breaker |
 
-Arquiteturais: API Gateway, Database per Service, Saga, Pub/Sub, Circuit Breaker.
+Arquiteturais: API Gateway, Database per Service, Saga coreografada, Publish/Subscribe,
+Circuit Breaker, Transactional Outbox, Dead Letter Queue.
 
-## Demo (15–20 min)
-Cadastro/login → equipe → torneio + inscrição (Saga) → gerar confrontos → informar/confirmar/contestar → ranking e notificações → derrubar Ranking e mostrar o resto funcionando.
+## Perfis
+
+| Perfil | Pode |
+|---|---|
+| `ADM` | Tudo; vê todas as notificações; não sujeito às limitações dos demais |
+| `ORGANIZADOR` | Cria e gerencia os próprios eventos, setores e lotes; vê as vendas; valida ingressos na entrada |
+| `PARTICIPANTE` | Compra ingressos, vê e cancela os próprios pedidos e ingressos, recebe avisos |
+
+O cadastro público nunca cria um ADM; o administrador inicial vem de `ADMIN_EMAIL` /
+`ADMIN_SENHA`, de forma idempotente, na subida do Gateway.
+
+## Demonstração (15–20 min)
+
+1. Cadastro e login (participante e organizador) — autenticação no Gateway.
+2. Organizador cria evento, setores e lotes; publica e abre as vendas.
+3. Participante compra: pedido **202**, Saga roda, ingresso emitido, aviso chega.
+4. Pagamento recusado de propósito (gatilho determinístico) → compensação: lugares
+   liberados, pedido cancelado, comprador avisado.
+5. Validação do ingresso na entrada; segunda tentativa é recusada.
+6. Cancelamento do evento → ingressos invalidados, estorno, avisos a todos os compradores.
+7. **Tolerância a falhas**: `docker compose stop pagamento` e `stop notificacoes`,
+   mostrando o resto do sistema funcionando e os avisos chegando depois.

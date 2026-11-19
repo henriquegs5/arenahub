@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "usuario.registrado.v1",
   "title": "UsuarioRegistrado (v1)",
-  "description": "Uma conta foi criada. Publicado por identidade. Consumido por: notificacoes, equipes. Routing key: usuario.registrado.v1",
+  "description": "Uma conta foi criada. Publicado por gateway (a autenticacao vive dentro do API Gateway). Consumido por: notificacoes. Routing key: usuario.registrado.v1",
   "type": "object",
   "required": [
     "eventId",
@@ -32,7 +32,7 @@
       "type": "string"
     },
     "producer": {
-      "const": "identidade"
+      "const": "gateway"
     },
     "payload": {
       "type": "object",
@@ -57,7 +57,7 @@
         "papel": {
           "type": "string",
           "enum": [
-            "JOGADOR",
+            "PARTICIPANTE",
             "ORGANIZADOR",
             "ADM"
           ]

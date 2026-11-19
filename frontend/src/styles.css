@@ -64,11 +64,15 @@ a { color: var(--azul); }
   background: var(--bg-alt); border-right: 1px solid var(--borda);
   display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
 }
-.marca { display: flex; align-items: center; gap: 10px; padding: 18px 18px 14px; }
+.marca { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 18px 18px 14px; }
 .marca-icone {
   width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center;
   background: linear-gradient(145deg, var(--azul), var(--vermelho-2)); color: #fff; flex-shrink: 0;
 }
+/* Logotipo: wordmark largo (2,6:1). A altura manda; a largura acompanha. */
+.marca-logo { width: 164px; height: auto; object-fit: contain; display: block; }
+.marca-logo.g { width: 224px; }
+.marca-lema { font-size: .68rem; color: var(--txt-3); letter-spacing: .08em; }
 .marca b { font-size: 1.05rem; letter-spacing: -.02em; }
 .marca span { display: block; font-size: .68rem; color: var(--txt-3); letter-spacing: .08em; }
 .menu { display: flex; flex-direction: column; gap: 2px; padding: 6px 10px; overflow-y: auto; }
@@ -84,12 +88,29 @@ a { color: var(--azul); }
   margin-left: auto; background: var(--vermelho); color: #fff; font-size: .68rem;
   padding: 1px 7px; border-radius: 99px; font-weight: 600;
 }
-.saude { margin-top: auto; border-top: 1px solid var(--borda); padding: 12px 14px 16px; }
-.saude-topo { display: flex; align-items: center; gap: 7px; font-size: .74rem; color: var(--txt-3); margin-bottom: 9px; }
-.saude-linha { display: flex; align-items: center; gap: 8px; font-size: .78rem; color: var(--txt-2); padding: 2px 0; }
 .ponto { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .ponto.ok { background: var(--verde); } .ponto.alerta { background: var(--ambar); } .ponto.erro { background: var(--vermelho); }
+
+/* ---------- estado dos servicos (diagnostico, recolhido no cabecalho) ---------- */
+.saude-caixa { position: relative; }
+.saude-chip {
+  display: flex; align-items: center; gap: 7px; padding: 5px 10px;
+  background: var(--surface-2); border: 1px solid var(--borda); border-radius: 99px;
+  color: var(--txt-2); font: inherit; font-size: .76rem; cursor: pointer; transition: background .14s;
+}
+.saude-chip:hover { background: var(--surface-3); color: var(--txt); }
+.saude-chip.ok { color: var(--verde); }
+.saude-chip.alerta { color: var(--ambar); border-color: var(--ambar); }
+.capa-popover { position: fixed; inset: 0; z-index: 30; }
+.saude-popover {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 31; width: 252px;
+  background: var(--surface); border: 1px solid var(--borda); border-radius: var(--r);
+  box-shadow: var(--sombra); padding: 12px 14px;
+}
+.saude-popover-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.saude-linha { display: flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--txt-2); padding: 3px 0; }
 .saude-estado { margin-left: auto; font-size: .68rem; color: var(--ambar); }
+.saude-nota { margin-top: 10px; font-size: .7rem; color: var(--txt-3); line-height: 1.45; }
 
 /* ---------- cabeçalho ---------- */
 .topo {
@@ -295,7 +316,7 @@ td .destaque { font-weight: 680; font-size: .95rem; }
   background: radial-gradient(900px 500px at 15% -5%, #3563f526, transparent 60%),
               radial-gradient(760px 460px at 105% 105%, #ef444420, transparent 62%), var(--bg); }
 .entrar-caixa { width: 100%; max-width: 384px; }
-.entrar .marca { justify-content: center; padding: 0 0 6px; }
+.entrar .marca { align-items: center; padding: 0 0 6px; }
 .entrar .lema { text-align: center; color: var(--txt-2); font-size: .88rem; margin-bottom: 22px; }
 .entrar .cartao { padding: 22px; box-shadow: var(--sombra); }
 .entrar .campo { margin-bottom: 14px; }
@@ -325,3 +346,24 @@ td .destaque { font-weight: 680; font-size: .95rem; }
   .topo { padding: 11px 16px; }
   .usuario-txt { display: none; }
 }
+
+/* ---------- preenchimento automatico do navegador ----------
+   Sem isto, o Chrome pinta o campo de branco e quebra o tema escuro.
+   O truque do inset shadow repinta o fundo; -webkit-text-fill-color
+   corrige a cor do texto, que `color` sozinho nao alcanca.           */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+select:-webkit-autofill,
+textarea:-webkit-autofill {
+  -webkit-text-fill-color: var(--txt) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--surface-2) inset !important;
+  box-shadow: 0 0 0 1000px var(--surface-2) inset !important;
+  caret-color: var(--txt);
+  border-radius: var(--r-sm);
+  transition: background-color 6000s ease-in-out 0s;
+}
+
+/* Texto de ajuda sob um campo de formulario. */
+.ajuda { display: block; margin-top: 5px; font-size: .72rem; color: var(--txt-3); line-height: 1.4; }

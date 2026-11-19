@@ -1,34 +1,65 @@
 import { EventEnvelope } from "./messaging";
 import { Aviso } from "./canais";
 
-const curto = (id: string) => String(id).slice(0, 8);
+/**
+ * Traduz um evento de domínio em UM OU MAIS avisos legíveis — um por destinatário.
+ *
+ * Regra do projeto: a lista de destinatários (`payload.destinatarios`) e os nomes
+ * legíveis vêm no próprio payload. Este serviço NÃO consulta Eventos, Ingressos
+ * nem o Gateway para descobrir quem avisar ou como se chama alguma coisa.
+ *
+ * Lista vazia = evento sem aviso.
+ */
+export function montarAvisos(e: EventEnvelope<any>): Aviso[] {
+  const p = e.payload ?? {};
+  const destinatarios: string[] = Array.isArray(p.destinatarios) ? p.destinatarios : [];
+  if (destinatarios.length === 0) return [];
 
-/** Traduz um evento de domínio em um aviso legível. null = evento sem aviso. */
-export function montarAviso(e: EventEnvelope<any>): Aviso | null {
-  const p = e.payload;
-  const base = { usuarioId: null, torneioId: null, partidaId: null, dados: p, email: null, ocorridoEm: e.occurredAt ?? null };
+  const base = {
+    usuarioId: null as string | null,
+    eventoId: (p.eventoId as string) ?? null,
+    pedidoId: (p.pedidoId as string) ?? null,
+    ingressoId: (p.ingressoId as string) ?? null,
+    dados: p as Record<string, unknown>,
+    email: null as string | null,
+    ocorridoEm: e.occurredAt ?? null,
+  };
+
+  const modelo = conteudo(e);
+  if (!modelo) return [];
+
+  return destinatarios.map((usuarioId) => ({
+    ...base,
+    ...modelo,
+    usuarioId,
+    // O e-mail só acompanha o aviso do próprio dono da conta.
+    email: usuarioId === p.usuarioId ? (p.email as string) ?? null : null,
+  }));
+}
+
+/** Título, texto e tipo de cada evento conhecido. null = evento sem aviso. */
+function conteudo(e: EventEnvelope<any>): Pick<Aviso, "tipo" | "titulo" | "mensagem"> | null {
+  const p = e.payload ?? {};
   switch (e.type) {
     case "usuario.registrado":
-      return { ...base, tipo: "USUARIO_REGISTRADO", titulo: "Bem-vindo ao ArenaHub",
-        mensagem: `Olá, ${p.nome}! Sua conta (${p.papel}) foi criada.`, usuarioId: p.usuarioId, email: p.email };
-    case "resultado.informado":
-      return { ...base, tipo: "RESULTADO_INFORMADO", titulo: "Resultado informado",
-        mensagem: `Partida ${curto(p.partidaId)}: ${p.placarA} x ${p.placarB}. Aguardando confirmação do organizador.`,
-        torneioId: p.torneioId, partidaId: p.partidaId };
-    case "resultado.confirmado":
-      return { ...base, tipo: "RESULTADO_CONFIRMADO", titulo: "Resultado confirmado",
-        mensagem: `Partida ${curto(p.partidaId)}: ${p.placarA} x ${p.placarB}. ` +
-          (p.vencedorId ? `Vencedora: equipe ${curto(p.vencedorId)}.` : "Empate."),
-        torneioId: p.torneioId, partidaId: p.partidaId };
-    case "resultado.contestado":
-      return { ...base, tipo: "RESULTADO_CONTESTADO", titulo: "Resultado contestado",
-        mensagem: `Partida ${curto(p.partidaId)} contestada. Motivo: ${p.motivo}`,
-        torneioId: p.torneioId, partidaId: p.partidaId };
-    case "torneio.finalizado":
-      return { ...base, tipo: "TORNEIO_FINALIZADO", titulo: "Torneio finalizado",
-        mensagem: `Torneio ${curto(p.torneioId)} encerrado. Campeã: equipe ${curto(p.campeaoId)}.`,
-        torneioId: p.torneioId };
+      return {
+        tipo: "USUARIO_REGISTRADO",
+        titulo: "Bem-vindo ao ArenaHub",
+        mensagem: `Olá, ${p.nome}! Sua conta de ${rotuloPapel(p.papel)} foi criada. ` +
+          "Explore os eventos e garanta seu ingresso.",
+      };
+    case "usuario.atualizado":
+      return {
+        tipo: "USUARIO_ATUALIZADO",
+        titulo: "Conta atualizada",
+        mensagem: `Os dados da sua conta foram alterados. Perfil atual: ${rotuloPapel(p.papel)}.`,
+      };
     default:
       return null;
   }
 }
+
+const rotuloPapel = (papel: unknown): string =>
+  papel === "ADM" ? "administrador"
+    : papel === "ORGANIZADOR" ? "organizador"
+    : "participante";

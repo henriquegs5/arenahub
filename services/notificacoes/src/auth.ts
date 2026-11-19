@@ -7,7 +7,8 @@ import { Request, Response } from "express";
  *
  * Arquivo duplicado de propósito em cada serviço (sem biblioteca compartilhada).
  */
-export type Papel = "JOGADOR" | "ORGANIZADOR" | "ADM";
+export type Papel = "PARTICIPANTE" | "ORGANIZADOR" | "ADM";
+export const PAPEIS: Papel[] = ["PARTICIPANTE", "ORGANIZADOR", "ADM"];
 
 export interface Autor {
   id: string;
@@ -24,8 +25,8 @@ export function quem(req: Request): Autor | null {
   const id = req.headers["x-user-id"];
   const papel = req.headers["x-user-role"];
   if (typeof id !== "string" || !UUID_RE.test(id)) return null;
-  if (papel !== "JOGADOR" && papel !== "ORGANIZADOR" && papel !== "ADM") return null;
-  return { id, papel };
+  if (!PAPEIS.includes(papel as Papel)) return null;
+  return { id, papel: papel as Papel };
 }
 
 export const ehAdm = (a: Autor | null): boolean => a?.papel === "ADM";
@@ -53,6 +54,17 @@ export function exigirAdm(req: Request, res: Response): Autor | null {
   if (!a) return null;
   if (a.papel !== "ADM") {
     erro(res, 403, "ação restrita ao administrador");
+    return null;
+  }
+  return a;
+}
+
+/** Exige um dos papéis informados. Responde 401/403 e devolve null quando não for. */
+export function exigirPapel(req: Request, res: Response, ...papeis: Papel[]): Autor | null {
+  const a = exigir(req, res);
+  if (!a) return null;
+  if (a.papel !== "ADM" && !papeis.includes(a.papel)) {
+    erro(res, 403, `ação restrita a: ${papeis.join(", ")}`);
     return null;
   }
   return a;

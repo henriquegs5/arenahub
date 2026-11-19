@@ -1,5 +1,18 @@
 name: arenahub
 
+# ArenaHub — plataforma de gestão de eventos e venda de ingressos.
+#
+# QUATRO microsserviços de domínio, cada um em container Docker independente,
+# com banco próprio e fila própria, conforme o enunciado:
+#   eventos · ingressos · pagamento · notificacoes
+#
+# O gateway e o frontend são infraestrutura/apresentação, não serviços de domínio.
+# A autenticação vive dentro do gateway (ver README.md).
+#
+# Tolerância a falhas, para demonstrar ao vivo:
+#   docker compose stop pagamento     -> o resto do sistema continua funcionando
+#   docker compose stop notificacoes  -> a compra funciona; os avisos chegam depois
+
 x-service-defaults: &svc
   restart: unless-stopped
   depends_on:
@@ -30,70 +43,68 @@ services:
       timeout: 10s
       retries: 10
 
-  identidade:
+  # ---------- microsserviço 1: eventos ----------
+  eventos:
     <<: *svc
-    build: ./services/identidade
+    build: ./services/eventos
     environment:
       PORT: 3001
-      DATABASE_URL: postgres://identidade_user:identidade_pw@postgres:5432/identidade_db
-      JWT_SECRET: ${JWT_SECRET:-arenahub-dev-secret-change-me}
+      DATABASE_URL: postgres://eventos_user:eventos_pw@postgres:5432/eventos_db
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
 
-  equipes:
+  # ---------- microsserviço 2: ingressos ----------
+  ingressos:
     <<: *svc
-    build: ./services/equipes
+    build: ./services/ingressos
     environment:
       PORT: 3002
-      DATABASE_URL: postgres://equipes_user:equipes_pw@postgres:5432/equipes_db
+      DATABASE_URL: postgres://ingressos_user:ingressos_pw@postgres:5432/ingressos_db
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
 
-  torneios:
+  # ---------- microsserviço 3: pagamento ----------
+  pagamento:
     <<: *svc
-    build: ./services/torneios
+    build: ./services/pagamento
     environment:
       PORT: 3003
-      DATABASE_URL: postgres://torneios_user:torneios_pw@postgres:5432/torneios_db
+      DATABASE_URL: postgres://pagamento_user:pagamento_pw@postgres:5432/pagamento_db
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
 
-  partidas:
-    <<: *svc
-    build: ./services/partidas
-    environment:
-      PORT: 3004
-      DATABASE_URL: postgres://partidas_user:partidas_pw@postgres:5432/partidas_db
-      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
-
-  ranking:
-    <<: *svc
-    build: ./services/ranking
-    environment:
-      PORT: 3005
-      DATABASE_URL: postgres://ranking_user:ranking_pw@postgres:5432/ranking_db
-      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
-
+  # ---------- microsserviço 4: notificações ----------
   notificacoes:
     <<: *svc
     build: ./services/notificacoes
     environment:
-      PORT: 3006
+      PORT: 3004
       DATABASE_URL: postgres://notificacoes_user:notificacoes_pw@postgres:5432/notificacoes_db
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
 
+  # ---------- infraestrutura: entrada única + autenticação ----------
   gateway:
+    <<: *svc
     build: ./gateway
-    restart: unless-stopped
-    depends_on: [identidade, equipes, torneios, partidas, ranking, notificacoes]
+    depends_on:
+      postgres: {condition: service_healthy}
+      rabbitmq: {condition: service_healthy}
+      eventos: {condition: service_started}
+      ingressos: {condition: service_started}
+      pagamento: {condition: service_started}
+      notificacoes: {condition: service_started}
     ports:
       - "8080:8080"
     environment:
       PORT: 8080
+      DATABASE_URL: postgres://gateway_user:gateway_pw@postgres:5432/gateway_db
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
       JWT_SECRET: ${JWT_SECRET:-arenahub-dev-secret-change-me}
-      IDENTIDADE_URL: http://identidade:3001
-      EQUIPES_URL: http://equipes:3002
-      TORNEIOS_URL: http://torneios:3003
-      PARTIDAS_URL: http://partidas:3004
-      RANKING_URL: http://ranking:3005
-      NOTIFICACOES_URL: http://notificacoes:3006
+      # Administrador inicial, criado de forma idempotente na subida.
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@arenahub.local}
+      ADMIN_SENHA: ${ADMIN_SENHA:-arenahub123}
+      ADMIN_NOME: ${ADMIN_NOME:-Administrador}
+      EVENTOS_URL: http://eventos:3001
+      INGRESSOS_URL: http://ingressos:3002
+      PAGAMENTO_URL: http://pagamento:3003
+      NOTIFICACOES_URL: http://notificacoes:3004
 
   frontend:
     build: ./frontend

@@ -1,22 +1,29 @@
--- Um banco e um usuário por serviço. Nenhum usuário acessa o banco de outro.
-CREATE USER identidade_user    WITH PASSWORD 'identidade_pw';
-CREATE USER equipes_user       WITH PASSWORD 'equipes_pw';
-CREATE USER torneios_user      WITH PASSWORD 'torneios_pw';
-CREATE USER partidas_user      WITH PASSWORD 'partidas_pw';
-CREATE USER ranking_user       WITH PASSWORD 'ranking_pw';
-CREATE USER notificacoes_user  WITH PASSWORD 'notificacoes_pw';
+-- DATABASE PER SERVICE: um banco e um usuário por serviço.
+-- Nenhum usuário tem permissão no banco de outro, então um serviço não consegue
+-- ler os dados de outro nem por engano. Não há join nem chave estrangeira
+-- atravessando serviços: cada um guarda só o ID das entidades alheias.
+--
+-- O Gateway tem banco próprio porque absorveu a AUTENTICAÇÃO (contas e papéis).
+-- Ele é infraestrutura, não um quinto microsserviço de domínio: o enunciado
+-- exige exatamente quatro. Ver README.md, "Decisões de arquitetura".
+--
+-- ATENÇÃO: este script roda SOMENTE quando o volume do Postgres está vazio.
+-- Ao trocar o conjunto de serviços, recrie o volume: docker compose down -v
+CREATE USER gateway_user      WITH PASSWORD 'gateway_pw';
+CREATE USER eventos_user      WITH PASSWORD 'eventos_pw';
+CREATE USER ingressos_user    WITH PASSWORD 'ingressos_pw';
+CREATE USER pagamento_user    WITH PASSWORD 'pagamento_pw';
+CREATE USER notificacoes_user WITH PASSWORD 'notificacoes_pw';
 
-CREATE DATABASE identidade_db   OWNER identidade_user;
-CREATE DATABASE equipes_db      OWNER equipes_user;
-CREATE DATABASE torneios_db     OWNER torneios_user;
-CREATE DATABASE partidas_db     OWNER partidas_user;
-CREATE DATABASE ranking_db      OWNER ranking_user;
+CREATE DATABASE gateway_db      OWNER gateway_user;
+CREATE DATABASE eventos_db      OWNER eventos_user;
+CREATE DATABASE ingressos_db    OWNER ingressos_user;
+CREATE DATABASE pagamento_db    OWNER pagamento_user;
 CREATE DATABASE notificacoes_db OWNER notificacoes_user;
 
-REVOKE CONNECT ON DATABASE identidade_db, equipes_db, torneios_db, partidas_db, ranking_db, notificacoes_db FROM PUBLIC;
-GRANT CONNECT ON DATABASE identidade_db   TO identidade_user;
-GRANT CONNECT ON DATABASE equipes_db      TO equipes_user;
-GRANT CONNECT ON DATABASE torneios_db     TO torneios_user;
-GRANT CONNECT ON DATABASE partidas_db     TO partidas_user;
-GRANT CONNECT ON DATABASE ranking_db      TO ranking_user;
+REVOKE CONNECT ON DATABASE gateway_db, eventos_db, ingressos_db, pagamento_db, notificacoes_db FROM PUBLIC;
+GRANT CONNECT ON DATABASE gateway_db      TO gateway_user;
+GRANT CONNECT ON DATABASE eventos_db      TO eventos_user;
+GRANT CONNECT ON DATABASE ingressos_db    TO ingressos_user;
+GRANT CONNECT ON DATABASE pagamento_db    TO pagamento_user;
 GRANT CONNECT ON DATABASE notificacoes_db TO notificacoes_user;

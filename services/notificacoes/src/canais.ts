@@ -1,13 +1,18 @@
 import { randomUUID } from "node:crypto";
 import { pool } from "./db";
 
+/**
+ * Um aviso pertence SEMPRE a um destinatário (`usuarioId`). Quem publica o evento
+ * informa os destinatários e os nomes legíveis; este serviço só formata e entrega.
+ */
 export interface Aviso {
   tipo: string;
   titulo: string;
   mensagem: string;
   usuarioId: string | null;
-  torneioId: string | null;
-  partidaId: string | null;
+  eventoId: string | null;
+  pedidoId: string | null;
+  ingressoId: string | null;
   dados: Record<string, unknown>;
   email?: string | null;
   /** Momento em que o evento ocorreu (occurredAt), usado para ordenar o feed. */
@@ -27,9 +32,10 @@ export class CanalTela implements CanalNotificacao {
   suporta() { return true; }
   async enviar(a: Aviso) {
     await pool.query(
-      `INSERT INTO notificacoes (id, tipo, titulo, mensagem, usuario_id, torneio_id, partida_id, dados, criado_em)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8, COALESCE($9::timestamptz, now()))`,
-      [randomUUID(), a.tipo, a.titulo, a.mensagem, a.usuarioId, a.torneioId, a.partidaId, JSON.stringify(a.dados), a.ocorridoEm ?? null]
+      `INSERT INTO notificacoes (id, tipo, titulo, mensagem, usuario_id, evento_id, pedido_id, ingresso_id, dados, criado_em)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9, COALESCE($10::timestamptz, now()))`,
+      [randomUUID(), a.tipo, a.titulo, a.mensagem, a.usuarioId, a.eventoId, a.pedidoId, a.ingressoId,
+       JSON.stringify(a.dados), a.ocorridoEm ?? null]
     );
   }
 }
