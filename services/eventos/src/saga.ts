@@ -98,6 +98,9 @@ export function tratarCompraSolicitada(evento: EventEnvelope<PayloadCompraSolici
             pedidoId,
             eventoId,
             compradorId,
+            // Dono do evento: Ingressos guarda a copia para saber quem valida na
+            // entrada, sem consultar Eventos.
+            organizadorId: e.organizadorId,
             eventoNome: e.nome,
             eventoDataHora: e.dataHora.toISOString(),
             eventoLocal: e.local,

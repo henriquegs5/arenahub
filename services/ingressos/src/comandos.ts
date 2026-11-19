@@ -151,6 +151,7 @@ export class EmitirIngressos extends ComandoPedido {
           pedidoId: pedido.id,
           eventoId: pedido.eventoId,
           titularId: pedido.compradorId,
+          organizadorId: pedido.organizadorId,
           setorNome: item.setorNome,
           loteNome: item.loteNome,
           politica: item.politica,

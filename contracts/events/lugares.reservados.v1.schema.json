@@ -127,6 +127,11 @@
             "format": "uuid"
           },
           "description": "Sai vazia: evento interno da Saga, sem aviso ao usuario."
+        },
+        "organizadorId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Dono do evento. Opcional (acrescentado depois da v1, compativel): Ingressos guarda a copia para saber quem valida na entrada e quem ve as vendas."
         }
       },
       "additionalProperties": false

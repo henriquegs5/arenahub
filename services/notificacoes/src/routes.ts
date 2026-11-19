@@ -1,6 +1,8 @@
 import { Router, Request, Response } from "express";
 import { Autor, UUID_RE, erro, exigir } from "./auth";
 import * as repo from "./repositorio";
+import { exigirAdm } from "./auth";
+import { contarDLQ, descartarDLQ, listarDLQ, reprocessarDLQ } from "./messaging";
 
 /**
  * Rotas REST (JSON) do serviço de notificações.
@@ -14,6 +16,33 @@ import * as repo from "./repositorio";
  * discordava entre abas.
  */
 export const router = Router();
+
+// ---------- dead letter (somente ADM) ----------
+//
+// Mensagem que falha de forma permanente no consumidor NAO e descartada: vai para
+// `<servico>.events.dlq`. Estas rotas deixam o administrador ver o que ficou
+// parado, devolver a mensagem a fila para nova tentativa ou descarta-la de vez.
+// Declaradas ANTES das rotas com parametro, que as capturariam.
+
+router.get("/dlq", async (req: Request, res: Response) => {
+  if (!exigirAdm(req, res)) return;
+  try {
+    res.json({ total: await contarDLQ(), mensagens: await listarDLQ(50) });
+  } catch (e) { console.error(e); res.status(500).json({ erro: "erro interno" }); }
+});
+
+router.post("/dlq/reprocessar", async (req: Request, res: Response) => {
+  if (!exigirAdm(req, res)) return;
+  try { res.json({ reprocessadas: await reprocessarDLQ(50) }); }
+  catch (e) { console.error(e); res.status(500).json({ erro: "erro interno" }); }
+});
+
+router.delete("/dlq", async (req: Request, res: Response) => {
+  if (!exigirAdm(req, res)) return;
+  try { res.json({ descartadas: await descartarDLQ() }); }
+  catch (e) { console.error(e); res.status(500).json({ erro: "erro interno" }); }
+});
+
 
 const limiteDe = (v: unknown) => Math.min(Math.max(parseInt(String(v ?? "50"), 10) || 50, 1), 200);
 const ehVerdade = (v: unknown) => v === "1" || v === "true";

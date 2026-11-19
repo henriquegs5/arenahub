@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { JWT_EXPIRES_IN, JWT_SECRET } from "../config";
-import { listarDLQ, reprocessarDLQ } from "../messaging";
+import { contarDLQ, descartarDLQ, listarDLQ, reprocessarDLQ } from "../messaging";
 import { transacao, transacaoCom } from "../outbox";
 import * as usuarios from "./usuarios";
 import { Papel, PAPEIS, PAPEIS_PUBLICOS } from "./usuarios";
@@ -248,12 +248,18 @@ router.delete("/usuarios/:id", async (req, res) => {
 // ---------- administração da dead letter do próprio Gateway ----------
 router.get("/dlq", async (req, res) => {
   if (!exigirAdm(req, res)) return;
-  try { res.json(await listarDLQ(50)); }
+  try { res.json({ total: await contarDLQ(), mensagens: await listarDLQ(50) }); }
   catch (e) { console.error(e); erro(res, 500, "erro interno"); }
 });
 
 router.post("/dlq/reprocessar", async (req, res) => {
   if (!exigirAdm(req, res)) return;
   try { res.json({ reprocessadas: await reprocessarDLQ(50) }); }
+  catch (e) { console.error(e); erro(res, 500, "erro interno"); }
+});
+
+router.delete("/dlq", async (req, res) => {
+  if (!exigirAdm(req, res)) return;
+  try { res.json({ descartadas: await descartarDLQ() }); }
   catch (e) { console.error(e); erro(res, 500, "erro interno"); }
 });

@@ -232,7 +232,17 @@ export async function listarDLQ(limite = 50): Promise<ItemDLQ[]> {
   return itens;
 }
 
-/** Devolve as mensagens da dead letter ao exchange para nova tentativa. */
+/**
+ * Devolve as mensagens da dead letter a fila DESTE servico para nova tentativa.
+ *
+ * Vai direto para a fila (default exchange + nome da fila) e NAO de volta ao
+ * exchange `arenahub.events`, por dois motivos:
+ *  - uma mensagem morta carrega a routing key da dead letter (o nome do servico),
+ *    nao a original, e nenhuma fila esta ligada a essa chave: republicar no
+ *    exchange a perderia em silencio;
+ *  - o exchange espalharia a mensagem para TODOS os servicos interessados, mas so
+ *    este falhou em trata-la.
+ */
 export async function reprocessarDLQ(limite = 50): Promise<number> {
   if (!conexao || !channel) return 0;
   const ch = await conexao.createChannel();
@@ -241,7 +251,7 @@ export async function reprocessarDLQ(limite = 50): Promise<number> {
     for (let i = 0; i < limite; i++) {
       const msg = await ch.get(FILA_DLQ, { noAck: false });
       if (!msg) break;
-      const ok = channel.publish(EXCHANGE, msg.fields.routingKey || "", msg.content, {
+      const ok = channel.sendToQueue(FILA, msg.content, {
         persistent: true,
         contentType: "application/json",
       });
@@ -251,4 +261,35 @@ export async function reprocessarDLQ(limite = 50): Promise<number> {
     await ch.close().catch(() => undefined);
   }
   return n;
+}
+
+/** Descarta de vez as mensagens da dead letter (decisao do administrador). */
+export async function descartarDLQ(limite = 500): Promise<number> {
+  if (!conexao) return 0;
+  const ch = await conexao.createChannel();
+  let n = 0;
+  try {
+    for (let i = 0; i < limite; i++) {
+      const msg = await ch.get(FILA_DLQ, { noAck: false });
+      if (!msg) break;
+      ch.ack(msg);
+      n++;
+    }
+  } finally {
+    await ch.close().catch(() => undefined);
+  }
+  return n;
+}
+
+/** Quantas mensagens estao paradas na dead letter. */
+export async function contarDLQ(): Promise<number> {
+  if (!conexao) return -1;
+  const ch = await conexao.createChannel();
+  try {
+    return (await ch.checkQueue(FILA_DLQ)).messageCount;
+  } catch {
+    return -1;
+  } finally {
+    await ch.close().catch(() => undefined);
+  }
 }

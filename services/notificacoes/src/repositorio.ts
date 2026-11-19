@@ -46,6 +46,19 @@ export async function migrate(): Promise<void> {
     CREATE INDEX IF NOT EXISTS notificacoes_usuario
       ON notificacoes (usuario_id, criado_em DESC);`);
 
+  /**
+   * CONTAS REMOVIDAS. Quando um usuario e excluido, a cadeia de compensacao
+   * (cancelar pedidos, estornar) continua produzindo avisos PARA ele depois que
+   * os avisos antigos ja foram apagados. Sem este registro, eles ficariam
+   * orfaos, pertencendo a uma conta que nao existe mais. O dado vem do proprio
+   * evento `usuario.removido`: nao se consulta o Gateway.
+   */
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS usuarios_removidos (
+      usuario_id UUID PRIMARY KEY,
+      removido_em TIMESTAMPTZ NOT NULL DEFAULT now()
+    );`);
+
   // Índice do contador de não lidas, consultado a cada ciclo da interface.
   await pool.query(`
     CREATE INDEX IF NOT EXISTS notificacoes_nao_lidas
@@ -155,6 +168,17 @@ export async function removerLidas(usuarioId: string): Promise<number> {
 export async function removerDoUsuario(usuarioId: string): Promise<number> {
   const r = await pool.query("DELETE FROM notificacoes WHERE usuario_id = $1", [usuarioId]);
   return r.rowCount ?? 0;
+}
+
+export async function registrarRemovido(usuarioId: string): Promise<void> {
+  await pool.query(
+    "INSERT INTO usuarios_removidos (usuario_id) VALUES ($1) ON CONFLICT DO NOTHING", [usuarioId]
+  );
+}
+
+export async function estaRemovido(usuarioId: string): Promise<boolean> {
+  const r = await pool.query("SELECT 1 FROM usuarios_removidos WHERE usuario_id = $1", [usuarioId]);
+  return (r.rowCount ?? 0) > 0;
 }
 
 export async function marcarProcessado(eventId: string): Promise<boolean> {

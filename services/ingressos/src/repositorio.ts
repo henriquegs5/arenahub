@@ -19,6 +19,12 @@ export interface ItemPedido {
 export interface Pedido {
   id: string;
   eventoId: string;
+  /**
+   * Dono do evento, copiado do evento `lugares.reservados`. Este servico nao
+   * consulta Eventos: guarda a copia para saber quem pode validar na entrada e
+   * quem enxerga as vendas.
+   */
+  organizadorId: string | null;
   compradorId: string;
   status: StatusPedido;
   totalCentavos: number;
@@ -39,6 +45,7 @@ export interface Ingresso {
   id: string;
   pedidoId: string;
   eventoId: string;
+  organizadorId: string | null;
   titularId: string;
   codigo: string;
   setorNome: string | null;
@@ -135,6 +142,12 @@ export async function migrate(): Promise<void> {
     );
     CREATE INDEX IF NOT EXISTS pedido_historico_pedido ON pedido_historico (pedido_id, executado_em);
 
+    -- Quem organiza o evento: define quem valida na entrada e quem ve as vendas.
+    ALTER TABLE pedidos   ADD COLUMN IF NOT EXISTS organizador_id UUID;
+    ALTER TABLE ingressos ADD COLUMN IF NOT EXISTS organizador_id UUID;
+    CREATE INDEX IF NOT EXISTS pedidos_organizador   ON pedidos (organizador_id);
+    CREATE INDEX IF NOT EXISTS ingressos_organizador ON ingressos (organizador_id);
+
     CREATE TABLE IF NOT EXISTS eventos_processados (
       event_id      UUID PRIMARY KEY,
       processado_em TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -142,7 +155,8 @@ export async function migrate(): Promise<void> {
 }
 
 const mapPedido = (r: any): Pedido => ({
-  id: r.id, eventoId: r.evento_id, compradorId: r.comprador_id, status: r.status,
+  id: r.id, eventoId: r.evento_id, organizadorId: r.organizador_id,
+  compradorId: r.comprador_id, status: r.status,
   totalCentavos: r.total_centavos, meio: r.meio, referenciaPagamento: r.referencia_pagamento,
   motivo: r.motivo, eventoNome: r.evento_nome, eventoDataHora: r.evento_data_hora,
   eventoLocal: r.evento_local, expiraEm: r.expira_em, criadoEm: r.criado_em,
@@ -156,7 +170,8 @@ const mapItem = (r: any): ItemPedido => ({
 });
 
 const mapIngresso = (r: any): Ingresso => ({
-  id: r.id, pedidoId: r.pedido_id, eventoId: r.evento_id, titularId: r.titular_id,
+  id: r.id, pedidoId: r.pedido_id, eventoId: r.evento_id, organizadorId: r.organizador_id,
+  titularId: r.titular_id,
   codigo: r.codigo, setorNome: r.setor_nome, loteNome: r.lote_nome, politica: r.politica,
   precoCentavos: r.preco_centavos, status: r.status, eventoNome: r.evento_nome,
   eventoDataHora: r.evento_data_hora, eventoLocal: r.evento_local,
@@ -221,15 +236,18 @@ export async function aplicarReserva(
   pedidoId: string,
   dados: {
     totalCentavos: number;
+    organizadorId?: string | null;
     eventoNome: string; eventoDataHora: string; eventoLocal: string;
     itens: { loteId: string; setorNome: string; loteNome: string; precoUnitarioCentavos: number }[];
   }
 ): Promise<void> {
   await q.query(
     `UPDATE pedidos SET total_centavos = $2, evento_nome = $3, evento_data_hora = $4,
-                        evento_local = $5, atualizado_em = now()
+                        evento_local = $5, organizador_id = COALESCE($6, organizador_id),
+                        atualizado_em = now()
       WHERE id = $1`,
-    [pedidoId, dados.totalCentavos, dados.eventoNome, dados.eventoDataHora, dados.eventoLocal]
+    [pedidoId, dados.totalCentavos, dados.eventoNome, dados.eventoDataHora, dados.eventoLocal,
+     dados.organizadorId ?? null]
   );
   for (const item of dados.itens) {
     await q.query(
@@ -241,15 +259,17 @@ export async function aplicarReserva(
 }
 
 export async function listarPedidos(f: {
-  compradorId: string | null; eventoId?: string; status?: StatusPedido; limite: number;
+  compradorId: string | null; organizadorId?: string | null;
+  eventoId?: string; status?: StatusPedido; limite: number;
 }): Promise<Pedido[]> {
   const r = await pool.query(
     `SELECT * FROM pedidos
       WHERE ($1::uuid IS NULL OR comprador_id = $1)
         AND ($2::uuid IS NULL OR evento_id = $2)
         AND ($3::text IS NULL OR status = $3)
+        AND ($5::uuid IS NULL OR organizador_id = $5)
       ORDER BY criado_em DESC LIMIT $4`,
-    [f.compradorId, f.eventoId ?? null, f.status ?? null, f.limite]
+    [f.compradorId, f.eventoId ?? null, f.status ?? null, f.limite, f.organizadorId ?? null]
   );
   return r.rows.map(mapPedido);
 }
@@ -333,7 +353,7 @@ export function gerarCodigo(): string {
 }
 
 export interface NovoIngresso {
-  pedidoId: string; eventoId: string; titularId: string;
+  pedidoId: string; eventoId: string; titularId: string; organizadorId: string | null;
   setorNome: string | null; loteNome: string | null; politica: string; precoCentavos: number;
   eventoNome: string | null; eventoDataHora: Date | null; eventoLocal: string | null;
 }
@@ -345,10 +365,11 @@ export async function emitirIngresso(q: Queryable, d: NovoIngresso): Promise<Ing
       const r = await q.query(
         `INSERT INTO ingressos
            (id, pedido_id, evento_id, titular_id, codigo, setor_nome, lote_nome, politica,
-            preco_centavos, status, evento_nome, evento_data_hora, evento_local)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'EMITIDO',$10,$11,$12) RETURNING *`,
+            preco_centavos, status, evento_nome, evento_data_hora, evento_local, organizador_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'EMITIDO',$10,$11,$12,$13) RETURNING *`,
         [randomUUID(), d.pedidoId, d.eventoId, d.titularId, gerarCodigo(), d.setorNome,
-         d.loteNome, d.politica, d.precoCentavos, d.eventoNome, d.eventoDataHora, d.eventoLocal]
+         d.loteNome, d.politica, d.precoCentavos, d.eventoNome, d.eventoDataHora, d.eventoLocal,
+         d.organizadorId]
       );
       return mapIngresso(r.rows[0]);
     } catch (e: any) {
@@ -403,15 +424,17 @@ export async function registrarEntrada(q: Queryable, id: string, validadoPor: st
 }
 
 export async function listarIngressos(f: {
-  titularId: string | null; eventoId?: string; status?: StatusIngresso; limite: number;
+  titularId: string | null; organizadorId?: string | null;
+  eventoId?: string; status?: StatusIngresso; limite: number;
 }): Promise<Ingresso[]> {
   const r = await pool.query(
     `SELECT * FROM ingressos
       WHERE ($1::uuid IS NULL OR titular_id = $1)
         AND ($2::uuid IS NULL OR evento_id = $2)
         AND ($3::text IS NULL OR status = $3)
+        AND ($5::uuid IS NULL OR organizador_id = $5)
       ORDER BY emitido_em DESC LIMIT $4`,
-    [f.titularId, f.eventoId ?? null, f.status ?? null, f.limite]
+    [f.titularId, f.eventoId ?? null, f.status ?? null, f.limite, f.organizadorId ?? null]
   );
   return r.rows.map(mapIngresso);
 }

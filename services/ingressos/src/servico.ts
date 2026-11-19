@@ -108,8 +108,12 @@ async function aplicar(
   return aplicou;
 }
 
+/** Pedido que já terminou sem concluir: a Saga não anda mais para a frente. */
+const ENCERRADO_SEM_CONCLUIR = ["CANCELADO", "EXPIRADO", "RECUSADO"];
+
 interface PayloadLugaresReservados {
   pedidoId: string;
+  organizadorId?: string | null;
   totalCentavos: number;
   eventoNome: string;
   eventoDataHora: string;
@@ -124,6 +128,36 @@ export function tratarLugaresReservados(evento: EventEnvelope<PayloadLugaresRese
 
     await transacao(async (c) => {
       const pedido = await repo.buscarPedido(c, p.pedidoId, true);
+
+      /**
+       * COMPENSAÇÃO DA RESERVA TARDIA. O pedido pode ter sido cancelado ou ter
+       * expirado ainda PENDENTE — e nesse caso nenhum `pedido.cancelado` saiu,
+       * porque ainda não havia lugares reservados. Se a reserva chega DEPOIS,
+       * ninguém mais a reclama e ela ficaria ATIVA para sempre, prendendo lugares
+       * de um pedido morto. Aqui devolvemos o que acabou de ser reservado.
+       */
+      if (pedido && ENCERRADO_SEM_CONCLUIR.includes(pedido.status)) {
+        console.log(`[ingressos] reserva do pedido ${p.pedidoId} chegou com o pedido ${pedido.status}; devolvendo os lugares`);
+        const itens = await repo.itensDoPedido(c, pedido.id);
+        await repo.registrarHistorico(c, pedido.id, "DEVOLVER_RESERVA_TARDIA", null,
+          { motivo: "a reserva chegou depois do encerramento do pedido" }, pedido.status);
+        return [{
+          nome: "pedido.cancelado",
+          correlationId: evento.correlationId,
+          payload: {
+            pedidoId: pedido.id,
+            eventoId: pedido.eventoId,
+            compradorId: pedido.compradorId,
+            motivo: "a reserva chegou depois do encerramento do pedido",
+            situacao: pedido.status,
+            eventoNome: p.eventoNome,
+            itens: itens.map((i) => ({ loteId: i.loteId, quantidade: i.quantidade })),
+            // O comprador já foi avisado quando o pedido foi encerrado.
+            destinatarios: [] as string[],
+          },
+        }] as EventoSaida[];
+      }
+
       if (!pedido || pedido.status !== "PENDENTE") {
         console.log(`[ingressos] pedido ${p.pedidoId} não está PENDENTE; reserva ignorada`);
         return [];
@@ -159,16 +193,55 @@ export function tratarReservaRecusada(evento: EventEnvelope<{ pedidoId: string; 
 }
 
 /** Passo 5: pagamento aprovado → emite os ingressos. */
-export function tratarPagamentoAprovado(evento: EventEnvelope<{ pedidoId: string; autorizacao: string | null }>) {
+export function tratarPagamentoAprovado(
+  evento: EventEnvelope<{ pedidoId: string; autorizacao: string | null; valorCentavos?: number }>
+) {
   return idempotente(evento, async () => {
     const { pedidoId, autorizacao } = evento.payload;
-    await aplicar(
-      pedidoId,
-      new cmd.EmitirIngressos(autorizacao),
-      null,
-      evento.correlationId,
-      (s) => s === "AGUARDANDO_PAGAMENTO"
-    );
+
+    await transacao(async (c: PoolClient) => {
+      const pedido = await repo.buscarPedido(c, pedidoId, true);
+      if (!pedido) {
+        console.log(`[ingressos] pagamento aprovado para pedido inexistente ${pedidoId}; ignorado`);
+        return [];
+      }
+
+      if (pedido.status === "AGUARDANDO_PAGAMENTO") {
+        return cmd.executar(
+          new cmd.EmitirIngressos(autorizacao),
+          { c, pedido, autorId: null, correlationId: evento.correlationId }
+        );
+      }
+
+      /**
+       * COBRANÇA SEM INGRESSO. O pagamento foi aprovado, mas o pedido já tinha
+       * acabado: expirou com o serviço de Pagamento fora do ar, ou o comprador o
+       * cancelou enquanto a cobrança corria. Ignorar o evento deixaria o cliente
+       * cobrado, sem ingresso e sem estorno. O dinheiro entrou, então devolve.
+       *
+       * Idempotente: Pagamento só estorna uma transação ainda APROVADA.
+       */
+      if (ENCERRADO_SEM_CONCLUIR.includes(pedido.status)) {
+        console.log(`[ingressos] pagamento aprovado chegou com o pedido ${pedido.status}; pedindo estorno`);
+        await repo.registrarHistorico(c, pedido.id, "ESTORNAR_PAGAMENTO_TARDIO", null,
+          { motivo: "pagamento aprovado depois do encerramento do pedido", autorizacao }, pedido.status);
+        return [{
+          nome: "estorno.solicitado",
+          correlationId: evento.correlationId,
+          payload: {
+            pedidoId: pedido.id,
+            eventoId: pedido.eventoId,
+            compradorId: pedido.compradorId,
+            motivo: "o pagamento foi aprovado depois de o pedido ter sido encerrado",
+            eventoNome: pedido.eventoNome ?? "evento",
+            destinatarios: [] as string[],
+          },
+        }] as EventoSaida[];
+      }
+
+      console.log(`[ingressos] pedido ${pedidoId} está ${pedido.status}; pagamento aprovado ignorado`);
+      return [];
+    });
   });
 }
 
@@ -434,11 +507,15 @@ export async function validarEntrada(
   const ingresso = await repo.buscarIngressoPorCodigo(pool, codigo);
   if (!ingresso) return { aprovado: false, motivo: "código não encontrado", ingresso: null };
 
-  // Só o organizador do evento (ou o ADM) valida. O organizador é conhecido
-  // pelo pedido/evento; aqui usamos o papel, e a posse do evento é garantida
-  // porque o organizador só enxerga os códigos dos próprios eventos.
+  // Só o organizador DO EVENTO (ou o ADM) valida. O dono do evento vem copiado no
+  // ingresso (`lugares.reservados`), então não é preciso consultar Eventos.
   if (autor.papel === "PARTICIPANTE")
     throw new ErroNegocio(403, "somente o organizador do evento valida ingressos na entrada");
+
+  if (autor.papel === "ORGANIZADOR" && ingresso.organizadorId !== autor.id) {
+    // Não devolve o ingresso: não se revelam dados de um evento que não é dele.
+    return { aprovado: false, motivo: "este ingresso é de um evento de outro organizador", ingresso: null };
+  }
 
   if (ingresso.status !== "EMITIDO") {
     return { aprovado: false, motivo: estadoIngresso(ingresso.status).motivoRecusa(), ingresso };

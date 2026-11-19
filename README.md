@@ -186,6 +186,41 @@ defesa no próprio dado:
 - **Validar entrada:** `UPDATE ... WHERE status = 'EMITIDO'` — a segunda leitura
   do mesmo QR não passa.
 
+## Integridade e casos de borda
+
+Cada caso abaixo tem uma checagem automatizada que o reproduz de verdade
+(derrubando serviços, publicando mensagens no broker), não só no papel.
+
+| Situação | O que acontece |
+|---|---|
+| **Usuário excluído com ingressos** | `usuario.removido` → Ingressos cancela os pedidos e os ingressos → Pagamento estorna → Eventos devolve os lugares. Os avisos da cadeia que ainda chegarem não ficam órfãos: Notificações guarda um registro de contas removidas, vindo do próprio evento. |
+| **Organizador excluído com evento ativo** | Eventos cancela os eventos dele (`evento.cancelado`) e a cadeia normal de cancelamento corre: ingressos invalidados, estorno, todos os compradores avisados. |
+| **Evento cancelado com ingressos vendidos** | Ingressos `INVALIDADO`, lugares devolvidos, PIX/cartão estornados automaticamente. **Boleto não estorna sozinho**: a transação fica `APROVADA` e o comprador recebe o aviso de que o reembolso é manual. |
+| **Evento excluído** | Só enquanto ninguém comprou. Com vendas (ou já cancelado), a exclusão é recusada: o caminho é cancelar. |
+| **Pedido que trava** | Expira sozinho (ver "Pedido que trava: expiração"), com ou sem o Pagamento no ar. O ADM também pode descartá-lo na hora, cancelando o pedido. |
+| **Pagamento aprovado depois de o pedido acabar** | O cliente não fica cobrado sem ingresso: Ingressos pede o estorno. |
+| **Reserva que chega depois de o pedido acabar** | Ingressos manda devolver os lugares; a reserva não fica `ATIVA` para sempre. |
+| **Ingresso validado duas vezes** | A segunda leitura é recusada com o motivo ("já utilizado"). Vale mesmo com duas leituras simultâneas. |
+| **Ingresso de evento cancelado ou de pedido cancelado** | Recusado na entrada, com o motivo. |
+| **Validação por outro organizador** | Recusada: só o organizador **do evento** (ou o ADM) valida, e a recusa não vaza dados do ingresso. |
+
+### Dead letter
+
+Mensagem que falha de forma permanente no consumidor **não é descartada**: depois
+das tentativas, vai para `<servico>.events.dlq`. O ADM administra pela API, em
+cada serviço (`eventos`, `ingressos`, `pagamento`, `notificacoes`) e no Gateway
+(`/api/auth/dlq`):
+
+```
+GET    /api/<servico>/dlq              lista o que ficou parado (total + mensagens)
+POST   /api/<servico>/dlq/reprocessar  devolve as mensagens à fila do serviço
+DELETE /api/<servico>/dlq              descarta de vez
+```
+
+O reprocessamento devolve a mensagem **à fila do próprio serviço**, e não ao
+exchange: uma mensagem morta perde a routing key original, e o exchange a
+espalharia para serviços que nem falharam.
+
 ## Tolerância a falhas (cenários do enunciado)
 
 ```

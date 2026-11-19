@@ -303,6 +303,7 @@ Publica: Eventos · Consome: Ingressos
 | Campo do payload | Descrição |
 |---|---|
 | `pedidoId`, `eventoId`, `compradorId` | UUID |
+| `organizadorId` | UUID, opcional (compatível com a v1): dono do evento, para Ingressos saber quem valida na entrada |
 | `eventoNome`, `eventoDataHora`, `eventoLocal` | nomes legíveis |
 | `itens` | `{loteId, setorNome, loteNome, quantidade, politica, precoUnitarioCentavos}` |
 | `totalCentavos` | inteiro, em centavos |

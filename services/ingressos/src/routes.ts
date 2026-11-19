@@ -1,12 +1,14 @@
 import { Request, Response, Router } from "express";
 import { pool } from "./db";
-import { UUID_RE, erro, exigir } from "./auth";
+import { Autor, UUID_RE, erro, exigir } from "./auth";
 import { LIMITE_POR_COMPRADOR, PEDIDO_EXPIRA_SEGUNDOS } from "./config";
 import { STATUS_PEDIDO, StatusIngresso, StatusPedido, TransicaoInvalida, estadoPedido } from "./estados";
 import { MEIOS_PAGAMENTO, emReais } from "./meios";
 import * as repo from "./repositorio";
 import * as servico from "./servico";
 import { ErroNegocio } from "./servico";
+import { exigirAdm } from "./auth";
+import { contarDLQ, descartarDLQ, listarDLQ, reprocessarDLQ } from "./messaging";
 
 /**
  * Rotas REST (JSON) do serviço de ingressos.
@@ -17,6 +19,33 @@ import { ErroNegocio } from "./servico";
  * Toda permissão é verificada aqui, no backend.
  */
 export const router = Router();
+
+// ---------- dead letter (somente ADM) ----------
+//
+// Mensagem que falha de forma permanente no consumidor NAO e descartada: vai para
+// `<servico>.events.dlq`. Estas rotas deixam o administrador ver o que ficou
+// parado, devolver a mensagem a fila para nova tentativa ou descarta-la de vez.
+// Declaradas ANTES das rotas com parametro, que as capturariam.
+
+router.get("/dlq", async (req: Request, res: Response) => {
+  if (!exigirAdm(req, res)) return;
+  try {
+    res.json({ total: await contarDLQ(), mensagens: await listarDLQ(50) });
+  } catch (e) { console.error(e); res.status(500).json({ erro: "erro interno" }); }
+});
+
+router.post("/dlq/reprocessar", async (req: Request, res: Response) => {
+  if (!exigirAdm(req, res)) return;
+  try { res.json({ reprocessadas: await reprocessarDLQ(50) }); }
+  catch (e) { console.error(e); res.status(500).json({ erro: "erro interno" }); }
+});
+
+router.delete("/dlq", async (req: Request, res: Response) => {
+  if (!exigirAdm(req, res)) return;
+  try { res.json({ descartadas: await descartarDLQ() }); }
+  catch (e) { console.error(e); res.status(500).json({ erro: "erro interno" }); }
+});
+
 
 function tratar(res: Response, e: unknown) {
   if (e instanceof ErroNegocio) return erro(res, e.status, e.message);
@@ -32,6 +61,25 @@ const idDe = (req: Request, res: Response, campo = "id"): string | null => {
 };
 
 const limiteDe = (v: unknown) => Math.min(Math.max(parseInt(String(v ?? "50"), 10) || 50, 1), 200);
+
+// ---------- quem enxerga o que ----------
+//
+// ADM        tudo.
+// ORGANIZADOR as vendas e os ingressos dos PROPRIOS eventos (organizador_id).
+// PARTICIPANTE so o que e seu.
+
+const escopoPedidos = (a: Autor) =>
+  a.papel === "ADM" ? { compradorId: null, organizadorId: null }
+  : a.papel === "ORGANIZADOR" ? { compradorId: null, organizadorId: a.id }
+  : { compradorId: a.id, organizadorId: null };
+
+const podeVerPedido = (a: Autor, p: repo.Pedido) =>
+  a.papel === "ADM" || p.compradorId === a.id ||
+  (a.papel === "ORGANIZADOR" && p.organizadorId === a.id);
+
+const podeVerIngresso = (a: Autor, i: repo.Ingresso) =>
+  a.papel === "ADM" || i.titularId === a.id ||
+  (a.papel === "ORGANIZADOR" && i.organizadorId === a.id);
 
 // ---------- apresentação ----------
 
@@ -152,7 +200,7 @@ router.get("/pedidos", async (req: Request, res: Response) => {
     if (eventoId && !UUID_RE.test(eventoId)) return erro(res, 400, "eventoId inválido");
 
     const pedidos = await repo.listarPedidos({
-      compradorId: a.papel === "ADM" ? null : a.id,
+      ...escopoPedidos(a),
       eventoId,
       status,
       limite: limiteDe(req.query.limite),
@@ -175,7 +223,7 @@ router.get("/pedidos/:id", async (req: Request, res: Response) => {
 
     const p = await repo.buscarPedido(pool, id);
     if (!p) return erro(res, 404, "pedido não encontrado");
-    if (a.papel !== "ADM" && p.compradorId !== a.id)
+    if (!podeVerPedido(a, p))
       return erro(res, 403, "você só pode ver os seus próprios pedidos");
 
     res.json(pedidoPublico(p, await repo.itensDoPedido(pool, id), await repo.ingressosDoPedido(pool, id)));
@@ -190,7 +238,7 @@ router.get("/pedidos/:id/historico", async (req: Request, res: Response) => {
 
     const p = await repo.buscarPedido(pool, id);
     if (!p) return erro(res, 404, "pedido não encontrado");
-    if (a.papel !== "ADM" && p.compradorId !== a.id)
+    if (!podeVerPedido(a, p))
       return erro(res, 403, "você só pode ver os seus próprios pedidos");
 
     res.json(await repo.historicoDoPedido(pool, id));
@@ -222,7 +270,8 @@ router.get("/", async (req: Request, res: Response) => {
     if (eventoId && !UUID_RE.test(eventoId)) return erro(res, 400, "eventoId inválido");
 
     const ingressos = await repo.listarIngressos({
-      titularId: a.papel === "ADM" ? null : a.id,
+      titularId: a.papel === "ADM" || a.papel === "ORGANIZADOR" ? null : a.id,
+      organizadorId: a.papel === "ORGANIZADOR" ? a.id : null,
       eventoId,
       status,
       limite: limiteDe(req.query.limite),
@@ -239,7 +288,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 
     const i = await repo.buscarIngresso(pool, id);
     if (!i) return erro(res, 404, "ingresso não encontrado");
-    if (a.papel === "PARTICIPANTE" && i.titularId !== a.id)
+    if (!podeVerIngresso(a, i))
       return erro(res, 403, "você só pode ver os seus próprios ingressos");
 
     res.json(ingressoPublico(i));

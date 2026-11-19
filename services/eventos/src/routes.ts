@@ -6,6 +6,8 @@ import { POLITICAS_PRECO, PoliticaPreco } from "./precos";
 import * as repo from "./repositorio";
 import * as servico from "./servico";
 import { ErroNegocio } from "./servico";
+import { exigirAdm } from "./auth";
+import { contarDLQ, descartarDLQ, listarDLQ, reprocessarDLQ } from "./messaging";
 
 /**
  * Rotas REST (JSON) do serviço de eventos, consumidas pelo frontend através do
@@ -13,6 +15,33 @@ import { ErroNegocio } from "./servico";
  * tela não é controle de acesso.
  */
 export const router = Router();
+
+// ---------- dead letter (somente ADM) ----------
+//
+// Mensagem que falha de forma permanente no consumidor NAO e descartada: vai para
+// `<servico>.events.dlq`. Estas rotas deixam o administrador ver o que ficou
+// parado, devolver a mensagem a fila para nova tentativa ou descarta-la de vez.
+// Declaradas ANTES das rotas com parametro, que as capturariam.
+
+router.get("/dlq", async (req: Request, res: Response) => {
+  if (!exigirAdm(req, res)) return;
+  try {
+    res.json({ total: await contarDLQ(), mensagens: await listarDLQ(50) });
+  } catch (e) { console.error(e); res.status(500).json({ erro: "erro interno" }); }
+});
+
+router.post("/dlq/reprocessar", async (req: Request, res: Response) => {
+  if (!exigirAdm(req, res)) return;
+  try { res.json({ reprocessadas: await reprocessarDLQ(50) }); }
+  catch (e) { console.error(e); res.status(500).json({ erro: "erro interno" }); }
+});
+
+router.delete("/dlq", async (req: Request, res: Response) => {
+  if (!exigirAdm(req, res)) return;
+  try { res.json({ descartadas: await descartarDLQ() }); }
+  catch (e) { console.error(e); res.status(500).json({ erro: "erro interno" }); }
+});
+
 
 function tratar(res: Response, e: unknown) {
   if (e instanceof ErroNegocio) return erro(res, e.status, e.message);

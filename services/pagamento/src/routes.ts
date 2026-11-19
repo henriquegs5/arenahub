@@ -4,6 +4,8 @@ import { UUID_RE, erro, exigir } from "./auth";
 import { CENTAVOS_RECUSA, MEIOS_PAGAMENTO, emReais, estrategiaPara } from "./meios";
 import { mascararReferencia } from "./provedor";
 import * as repo from "./repositorio";
+import { exigirAdm } from "./auth";
+import { contarDLQ, descartarDLQ, listarDLQ, reprocessarDLQ } from "./messaging";
 
 /**
  * Rotas REST (JSON) do serviço de pagamento.
@@ -16,6 +18,33 @@ import * as repo from "./repositorio";
  * no backend.
  */
 export const router = Router();
+
+// ---------- dead letter (somente ADM) ----------
+//
+// Mensagem que falha de forma permanente no consumidor NAO e descartada: vai para
+// `<servico>.events.dlq`. Estas rotas deixam o administrador ver o que ficou
+// parado, devolver a mensagem a fila para nova tentativa ou descarta-la de vez.
+// Declaradas ANTES das rotas com parametro, que as capturariam.
+
+router.get("/dlq", async (req: Request, res: Response) => {
+  if (!exigirAdm(req, res)) return;
+  try {
+    res.json({ total: await contarDLQ(), mensagens: await listarDLQ(50) });
+  } catch (e) { console.error(e); res.status(500).json({ erro: "erro interno" }); }
+});
+
+router.post("/dlq/reprocessar", async (req: Request, res: Response) => {
+  if (!exigirAdm(req, res)) return;
+  try { res.json({ reprocessadas: await reprocessarDLQ(50) }); }
+  catch (e) { console.error(e); res.status(500).json({ erro: "erro interno" }); }
+});
+
+router.delete("/dlq", async (req: Request, res: Response) => {
+  if (!exigirAdm(req, res)) return;
+  try { res.json({ descartadas: await descartarDLQ() }); }
+  catch (e) { console.error(e); res.status(500).json({ erro: "erro interno" }); }
+});
+
 
 /** A referência do meio de pagamento nunca sai inteira da API. */
 const publico = (t: repo.Transacao) => ({
