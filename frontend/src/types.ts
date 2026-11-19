@@ -22,6 +22,9 @@ export interface Notificacao {
   pedidoId: string | null;
   ingressoId: string | null;
   criadoEm: string;
+  /** Controle de leitura vem do backend, nao do navegador. */
+  lidaEm: string | null;
+  lida: boolean;
 }
 
 export interface StatusServico { servico: string; circuito: string }

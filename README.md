@@ -222,5 +222,5 @@ docs/                    planejamento, contratos e artefatos de entrega
 
 - O JWT dura 8 horas e **não é renovado**: numa sessão muito longa, é preciso
   entrar de novo. Aceitável para a demonstração.
-- A marcação de leitura das notificações ainda é guardada no navegador; passa
-  para o backend junto com o CRUD completo de notificações.
+- O catálogo, a compra e as telas de administração ainda estão sendo migrados
+  para o novo domínio na interface; o backend já está completo.

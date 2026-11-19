@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { erro, exigir } from "./auth";
+import { Autor, UUID_RE, erro, exigir } from "./auth";
 import * as repo from "./repositorio";
 
 /**
@@ -9,21 +9,53 @@ import * as repo from "./repositorio";
  * avisos do usuário autenticado; o administrador pode ver todos. A verificação é
  * feita aqui, no backend — esconder o botão na tela não é controle de acesso.
  *
- * Marcar como lida, marcar todas, excluir e contador de não lidas entram no lote 4.
+ * O CONTROLE DE LEITURA mora no banco, não no navegador. Antes era `localStorage`,
+ * o que estava errado: a marcação sumia ao trocar de máquina e o contador
+ * discordava entre abas.
  */
 export const router = Router();
 
 const limiteDe = (v: unknown) => Math.min(Math.max(parseInt(String(v ?? "50"), 10) || 50, 1), 200);
+const ehVerdade = (v: unknown) => v === "1" || v === "true";
 
-/** Avisos do usuário autenticado. */
+/** O ADM enxerga a plataforma inteira; os demais, só o que é seu. */
+const escopo = (a: Autor): string | null => (a.papel === "ADM" ? null : a.id);
+
+/**
+ * Localiza um aviso e confere se o autor pode mexer nele.
+ * Devolve null (e já respondeu) quando não existe ou não é dele.
+ */
+async function avisoSob(req: Request, res: Response, a: Autor): Promise<repo.LinhaNotificacao | null> {
+  const id = req.params.id;
+  if (!UUID_RE.test(id)) { erro(res, 400, "id inválido"); return null; }
+
+  const aviso = await repo.buscar(id);
+  // Para quem não é ADM, um aviso de outra pessoa não existe: 404, não 403,
+  // para não revelar que o aviso existe.
+  if (!aviso || (a.papel !== "ADM" && aviso.usuarioId !== a.id)) {
+    erro(res, 404, "aviso não encontrado");
+    return null;
+  }
+  return aviso;
+}
+
+const tratar = (res: Response, e: unknown) => {
+  console.error(e);
+  erro(res, 500, "erro interno");
+};
+
+// ---------- leitura ----------
+
+/** Avisos do usuário autenticado. Filtro: ?naoLidas=1 */
 router.get("/minhas", async (req: Request, res: Response) => {
   try {
     const a = exigir(req, res); if (!a) return;
-    res.json(await repo.listar({ usuarioId: a.id, limite: limiteDe(req.query.limite) }));
-  } catch (e) {
-    console.error(e);
-    erro(res, 500, "erro interno");
-  }
+    res.json(await repo.listar({
+      usuarioId: a.id,
+      apenasNaoLidas: ehVerdade(req.query.naoLidas),
+      limite: limiteDe(req.query.limite),
+    }));
+  } catch (e) { tratar(res, e); }
 });
 
 /**
@@ -33,10 +65,70 @@ router.get("/minhas", async (req: Request, res: Response) => {
 router.get("/", async (req: Request, res: Response) => {
   try {
     const a = exigir(req, res); if (!a) return;
-    const usuarioId = a.papel === "ADM" ? null : a.id;
-    res.json(await repo.listar({ usuarioId, limite: limiteDe(req.query.limite) }));
-  } catch (e) {
-    console.error(e);
-    erro(res, 500, "erro interno");
-  }
+    res.json(await repo.listar({
+      usuarioId: escopo(a),
+      apenasNaoLidas: ehVerdade(req.query.naoLidas),
+      limite: limiteDe(req.query.limite),
+    }));
+  } catch (e) { tratar(res, e); }
+});
+
+/**
+ * Contador de não lidas, consultado a cada ciclo da interface.
+ * Responde só um número, em vez de a tela baixar a lista inteira para contar.
+ */
+router.get("/contador", async (req: Request, res: Response) => {
+  try {
+    const a = exigir(req, res); if (!a) return;
+    res.json({ naoLidas: await repo.contarNaoLidas(escopo(a)) });
+  } catch (e) { tratar(res, e); }
+});
+
+// ---------- marcar como lida ----------
+
+router.post("/lidas", async (req: Request, res: Response) => {
+  try {
+    const a = exigir(req, res); if (!a) return;
+    // Mesmo o ADM marca apenas os PRÓPRIOS avisos: marcar os de todo mundo
+    // não teria sentido e seria destrutivo.
+    res.json({ marcadas: await repo.marcarTodasLidas(a.id) });
+  } catch (e) { tratar(res, e); }
+});
+
+router.post("/:id/lida", async (req: Request, res: Response) => {
+  try {
+    const a = exigir(req, res); if (!a) return;
+    const aviso = await avisoSob(req, res, a); if (!aviso) return;
+    await repo.marcarLida(aviso.id);
+    res.json((await repo.buscar(aviso.id))!);
+  } catch (e) { tratar(res, e); }
+});
+
+/** Desfaz a marcação, para quem clicou sem querer. */
+router.post("/:id/nao-lida", async (req: Request, res: Response) => {
+  try {
+    const a = exigir(req, res); if (!a) return;
+    const aviso = await avisoSob(req, res, a); if (!aviso) return;
+    await repo.marcarNaoLida(aviso.id);
+    res.json((await repo.buscar(aviso.id))!);
+  } catch (e) { tratar(res, e); }
+});
+
+// ---------- excluir ----------
+
+/** Limpeza em massa: descarta os avisos JÁ LIDOS do próprio usuário. */
+router.delete("/lidas", async (req: Request, res: Response) => {
+  try {
+    const a = exigir(req, res); if (!a) return;
+    res.json({ removidas: await repo.removerLidas(a.id) });
+  } catch (e) { tratar(res, e); }
+});
+
+router.delete("/:id", async (req: Request, res: Response) => {
+  try {
+    const a = exigir(req, res); if (!a) return;
+    const aviso = await avisoSob(req, res, a); if (!aviso) return;
+    await repo.remover(aviso.id);
+    res.json({ removido: aviso.id });
+  } catch (e) { tratar(res, e); }
 });

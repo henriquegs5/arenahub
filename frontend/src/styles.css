@@ -190,6 +190,9 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .b-fantasma { background: none; color: var(--txt-2); }
 .b-fantasma:hover:not(:disabled) { background: var(--surface-2); color: var(--txt); }
 .b-pequeno { padding: 5px 10px; font-size: .8rem; }
+/* Botao so de icone: quadrado, sem o padding lateral do texto. */
+.b-icone { padding: 5px; }
+.b-icone:hover:not(:disabled) { color: var(--vermelho); }
 .b-bloco { width: 100%; justify-content: center; }
 .girando { animation: girar .8s linear infinite; }
 @keyframes girar { to { transform: rotate(360deg); } }

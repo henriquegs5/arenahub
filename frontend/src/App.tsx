@@ -2,12 +2,19 @@ import { useEffect, useState } from "react";
 import { api, setAoNaoAutorizado, setToken } from "./api";
 import { Layout, PaginaId } from "./components/Layout";
 import { usePolling } from "./hooks";
-import { Avisos, lerLidas } from "./pages/Avisos";
+import { Avisos } from "./pages/Avisos";
 import { Login, Sessao } from "./pages/Login";
 import { Visao } from "./pages/Visao";
-import { Ctx, Notificacao, Usuario } from "./types";
+import { Ctx, Usuario } from "./types";
 
 const CHAVE = "arenahub.sessao";
+
+/**
+ * O controle de leitura dos avisos vivia aqui, no navegador, o que estava
+ * errado: sumia ao trocar de maquina e discordava entre abas. Agora e do
+ * backend. Esta limpeza descarta o resto da versao antiga, uma unica vez.
+ */
+try { localStorage.removeItem("arenahub.avisosLidos"); } catch { /* ignora */ }
 
 function lerSessao(): Sessao | null {
   try {
@@ -49,14 +56,16 @@ export default function App() {
   };
   useEffect(() => { void recarregar(); }, [sessao?.token]);
 
-  // Contador de avisos não lidos, exibido na barra lateral e no cabeçalho.
+  /**
+   * Contador de avisos nao lidos, exibido na barra lateral e no cabecalho.
+   * O backend responde so um numero: a tela nao baixa a lista inteira para contar.
+   */
   usePolling(async () => {
     if (!sessao) return;
     try {
-      const todos = await api<Notificacao[]>("GET", "notificacoes/minhas?limite=50");
-      const lidas = lerLidas();
-      setNaoLidas(todos.filter((n) => !lidas.has(n.id)).length);
-    } catch { /* serviço de notificações indisponível: o resto continua */ }
+      const r = await api<{ naoLidas: number }>("GET", "notificacoes/contador");
+      setNaoLidas(r.naoLidas);
+    } catch { /* servico de notificacoes indisponivel: o resto continua */ }
   }, 5000, [sessao?.token, versaoLidas]);
 
   if (!sessao) return <Login aoEntrar={entrar} />;
