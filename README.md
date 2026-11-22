@@ -4,6 +4,7 @@ Trabalho de Arquitetura de Software — CEFET/RJ 2026.1 — Grupo 5.
 
 Plataforma de venda de ingressos para **eventos de e-sports e cultura gamer**:
 campeonatos presenciais, convenções e encontros.
+Backend desenvolvido em **Python 3.12 (FastAPI)** com arquitetura orientada a eventos e mensageria assíncrona.
 
 ## Arquitetura
 
@@ -44,7 +45,7 @@ componente de infraestrutura que valida o JWT em toda requisição; emitir o tok
 Gateway (`gateway_db`), ao qual nenhum serviço de domínio tem acesso. O Gateway
 continua sem conhecer evento, ingresso ou pagamento: os serviços recebem apenas
 `x-user-id` e `x-user-role`, mais as cópias de nome que chegam pelos eventos
-`usuario.*`. Justificativa também registrada em `gateway/src/auth/rotas.ts`.
+`usuario.*`. Justificativa também registrada em `gateway/src/auth/rotas.py`.
 
 **Por que há mensageria se o enunciado fala em REST.**
 O enunciado diz que a comunicação *pode* ser REST/JSON — é permissão, não
@@ -58,8 +59,8 @@ exige (um serviço fora do ar sem derrubar o resto).
 - **Database per Service**: um banco e um usuário por serviço; sem join e sem
   chave estrangeira entre serviços. Cada serviço guarda só o **ID** das entidades
   alheias, mais as cópias que chegaram por evento.
-- **Sem biblioteca de domínio compartilhada**: `messaging.ts`, `auth.ts` e
-  `outbox.ts` são duplicados de propósito em cada serviço. O contrato comum é o
+- **Sem biblioteca de domínio compartilhada**: `messaging.py`, `auth.py` e
+  `outbox.py` são duplicados de propósito em cada serviço. O contrato comum é o
   JSON Schema em `contracts/events/`, não código.
 - **Transactional Outbox**: o evento é gravado na mesma transação do fato e só
   entregue ao broker depois do commit, com repetição até conseguir.
@@ -130,7 +131,7 @@ O caminho mais direto é o primeiro: basta trocar o meio de pagamento na tela de
 compra. O segundo existe para mostrar que a regra vale para qualquer meio.
 
 A API declara os dois gatilhos em `GET /api/pagamento/meta/meios`, e a regra
-está em `services/pagamento/src/meios.ts` (`CENTAVOS_RECUSA`).
+está em `services/pagamento/src/meios.py` (`CENTAVOS_RECUSA`).
 
 Também dá para provocar uma **reserva recusada** (antes do pagamento): basta
 pedir mais lugares do que o lote tem, ou comprar de um evento cujas vendas não
@@ -162,7 +163,7 @@ O enunciado pede que as transações sejam processadas "de forma segura". Neste
 sistema isso significa, concretamente:
 
 - **Nenhum dado sensível de cartão entra no sistema.** Não existe coluna para
-  número, CVV ou validade em lugar nenhum — veja `services/pagamento/src/repositorio.ts`.
+  número, CVV ou validade em lugar nenhum — veja `services/pagamento/src/repositorio.py`.
 - O que trafega e é gravado é apenas uma **referência opaca** (token) ao meio de
   pagamento, como a que um provedor real devolve depois de tokenizar o cartão no
   navegador do comprador.
@@ -233,27 +234,35 @@ entregues quando o serviço volta. Com o Pagamento fora, a tela de compra explic
 compra até ele voltar; um pedido já feito retoma sozinho ao voltar (ou expira e
 libera os lugares). Detalhes e resultado do teste em `docs/01-planejamento.md`.
 O Circuit Breaker do Gateway
-(`gateway/src/breaker.ts`) isola o serviço doente para que a interface explique o
+(`gateway/src/breaker.py`) isola o serviço doente para que a interface explique o
 que está indisponível em vez de travar.
 
-## Conferir se compila (sem Docker)
+## Testes e Validação
 
-```
-./scripts/check-all.sh              # compila todos os serviços e o gateway
-python scripts/check-contratos.py   # código x JSON Schemas x catálogo de eventos
-cd services/eventos && npm test     # testes do domínio (Composite, State, Strategy)
+```bash
+# 1. Conferência formal de contratos de eventos (JSON Schemas)
+python scripts/check-contratos.py
+
+# 2. Testes unitários do domínio (Composite, State, Strategy, Factory Method)
+docker compose exec eventos python -m unittest discover -s . -p "*test*.py"
+
+# 3. Bateria completa de testes de integração ponta a ponta (E2E)
+python3 scratch/test_guia.py
+
+# 4. Build do frontend React
 cd frontend && npm run build
 ```
 
 ## Estrutura
 
 ```
-services/<nome>/src      código de cada microsserviço (config, db, messaging, outbox, auth, routes)
-gateway/src              API Gateway; auth/ guarda a autenticação absorvida
+services/<nome>/src      código de cada microsserviço Python FastAPI (config, db, messaging, outbox, auth, main)
+gateway/src              API Gateway em Python FastAPI; auth/ guarda a autenticação absorvida
 frontend/src             interface React (Vite + nginx)
 contracts/events/        JSON Schema de cada evento
 infra/postgres/init.sql  cria um banco e um usuário por serviço
-docs/                    planejamento, contratos e artefatos de entrega
+docs/                    planejamento, contratos de eventos
+docs/entrega/            artefatos finais da disciplina (PDFs de padrões e arquitetura, diagramas UML)
 ```
 
 ## Limitações conhecidas
