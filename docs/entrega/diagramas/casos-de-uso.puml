@@ -1,0 +1,61 @@
+@startuml casos-de-uso
+left to right direction
+skinparam packageStyle rectangle
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+
+actor "Participante" as User
+actor "Organizador" as Org
+actor "Administrador (ADM)" as Adm
+
+Org --|> User
+Adm --|> Org
+
+rectangle "ArenaHub — Plataforma de Eventos" {
+  package "Autenticação & Contas" {
+    usecase "Registrar Conta (Público)" as UC_Reg
+    usecase "Efetuar Login (JWT)" as UC_Login
+    usecase "Gerenciar Usuários" as UC_Users
+  }
+
+  package "Gestão de Eventos" {
+    usecase "Consultar Catálogo de Eventos" as UC_Cat
+    usecase "Criar/Editar Evento" as UC_CriaEvt
+    usecase "Estruturar Setores e Lotes (Composite)" as UC_Setores
+    usecase "Publicar e Abrir Vendas (State)" as UC_Publicar
+    usecase "Cancelar Evento" as UC_CancEvt
+  }
+
+  package "Ingressos & Compra" {
+    usecase "Realizar Compra de Ingresso (Saga)" as UC_Compra
+    usecase "Visualizar Meus Ingressos (QR Code)" as UC_MeusIng
+    usecase "Validar Check-in no Portão" as UC_Checkin
+    usecase "Cancelar Pedido / Solicitar Estorno" as UC_CancPed
+  }
+
+  package "Notificações & Operação" {
+    usecase "Receber Avisos e Confirmações (Observer)" as UC_Notif
+    usecase "Monitorar Saúde e Circuit Breaker" as UC_Status
+    usecase "Inspecionar e Reprocessar DLQ" as UC_DLQ
+  }
+}
+
+User --> UC_Reg
+User --> UC_Login
+User --> UC_Cat
+User --> UC_Compra
+User --> UC_MeusIng
+User --> UC_CancPed
+User --> UC_Notif
+
+Org --> UC_CriaEvt
+Org --> UC_Setores
+Org --> UC_Publicar
+Org --> UC_CancEvt
+Org --> UC_Checkin
+
+Adm --> UC_Users
+Adm --> UC_Status
+Adm --> UC_DLQ
+
+@enduml

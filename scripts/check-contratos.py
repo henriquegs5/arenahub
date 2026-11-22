@@ -25,22 +25,27 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EVENTOS_DIR = os.path.join(RAIZ, "contracts", "events")
 DOC = os.path.join(RAIZ, "docs", "02-contratos-eventos.md")
 
-# Servico -> caminho do config.ts. O gateway tambem publica eventos.
-CONFIGS = {
-    "gateway": os.path.join(RAIZ, "gateway", "src", "config.ts"),
-    "eventos": os.path.join(RAIZ, "services", "eventos", "src", "config.ts"),
-    "ingressos": os.path.join(RAIZ, "services", "ingressos", "src", "config.ts"),
-    "pagamento": os.path.join(RAIZ, "services", "pagamento", "src", "config.ts"),
-    "notificacoes": os.path.join(RAIZ, "services", "notificacoes", "src", "config.ts"),
+# Servico -> caminhos do config (py ou ts). O gateway tambem publica eventos.
+CONFIGS_BASE = {
+    "gateway": os.path.join(RAIZ, "gateway", "src"),
+    "eventos": os.path.join(RAIZ, "services", "eventos", "src"),
+    "ingressos": os.path.join(RAIZ, "services", "ingressos", "src"),
+    "pagamento": os.path.join(RAIZ, "services", "pagamento", "src"),
+    "notificacoes": os.path.join(RAIZ, "services", "notificacoes", "src"),
 }
 
+def obter_caminho_config(diretorio):
+    py = os.path.join(diretorio, "config.py")
+    if os.path.exists(py):
+        return py
+    return os.path.join(diretorio, "config.ts")
 
 def ler_lista(texto, nome):
-    """Extrai os literais de string de `export const NOME: string[] = [...]`."""
-    m = re.search(r"export const " + nome + r"\s*:\s*string\[\]\s*=\s*\[(.*?)\]", texto, re.S)
+    """Extrai os literais de string de listas em TS ou Python (PUBLISHES = [...] / export const PUBLISHES = [...])."""
+    m = re.search(r"(?:export const )?" + nome + r"(?:\s*:\s*string\[\])?\s*=\s*\[(.*?)\]", texto, re.S)
     if not m:
         return []
-    return re.findall(r'"([^"]+)"', m.group(1))
+    return re.findall(r'["\']([^"\']+)["\']', m.group(1))
 
 
 def main():
@@ -49,7 +54,8 @@ def main():
     publica = {}    # routing key -> servico
     consome = {}    # routing key -> [servicos]
 
-    for servico, caminho in CONFIGS.items():
+    for servico, diretorio in CONFIGS_BASE.items():
+        caminho = obter_caminho_config(diretorio)
         if not os.path.exists(caminho):
             problemas.append("config nao encontrado: %s" % caminho)
             continue

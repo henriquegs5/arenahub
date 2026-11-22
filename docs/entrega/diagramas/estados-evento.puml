@@ -1,0 +1,31 @@
+@startuml estados-evento
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam stateBackgroundColor #EFF6FF
+skinparam stateBorderColor #1E3A8A
+
+title ArenaHub — Máquina de Estados do Evento (GoF State)
+
+[*] --> RASCUNHO : Criar evento
+
+RASCUNHO : visivel_no_catalogo = false\naceita_vendas = false
+PUBLICADO : visivel_no_catalogo = true\naceita_vendas = false
+VENDAS_ABERTAS : visivel_no_catalogo = true\naceita_vendas = true
+VENDAS_ENCERRADAS : visivel_no_catalogo = true\naceita_vendas = false
+REALIZADO : visivel_no_catalogo = true\naceita_vendas = false (Final)
+CANCELADO : visivel_no_catalogo = false\naceita_vendas = false (Final)
+
+RASCUNHO --> PUBLICADO : publicar()
+PUBLICADO --> VENDAS_ABERTAS : abrir_vendas()
+VENDAS_ABERTAS --> VENDAS_ENCERRADAS : encerrar_vendas()
+VENDAS_ENCERRADAS --> REALIZADO : realizar()
+
+RASCUNHO --> CANCELADO : cancelar()
+PUBLICADO --> CANCELADO : cancelar()
+VENDAS_ABERTAS --> CANCELADO : cancelar()
+VENDAS_ENCERRADAS --> CANCELADO : cancelar()
+
+REALIZADO --> [*]
+CANCELADO --> [*]
+
+@enduml

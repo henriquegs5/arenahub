@@ -1,0 +1,37 @@
+@startuml estados-pedido
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam stateBackgroundColor #EFF6FF
+skinparam stateBorderColor #1E3A8A
+
+title ArenaHub — Máquina de Estados do Pedido e Ingresso (GoF State)
+
+state "Ciclo do Pedido" as Pedido {
+  [*] --> PENDENTE : compra.solicitada (HTTP 202)
+  PENDENTE --> RESERVADO : lugares.reservados
+  PENDENTE --> RECUSADO : reserva.recusada
+
+  RESERVADO --> AGUARDANDO_PAGAMENTO : pagamento.solicitado
+  AGUARDANDO_PAGAMENTO --> PAGO : pagamento.aprovado
+  AGUARDANDO_PAGAMENTO --> RECUSADO : pagamento.recusado (Compensação)
+  AGUARDANDO_PAGAMENTO --> CANCELADO : expiração (120s) / timeout
+
+  PAGO --> CONCLUIDO : ingresso.emitido
+  CONCLUIDO --> ESTORNADO : cancelamento de evento / estorno
+
+  CONCLUIDO --> [*]
+  RECUSADO --> [*]
+  CANCELADO --> [*]
+  ESTORNADO --> [*]
+}
+
+state "Ciclo do Ingresso Digital" as Ingresso {
+  [*] --> EMITIDO : Pedido CONCLUIDO
+  EMITIDO --> UTILIZADO : Check-in na catraca (1ª leitura)
+  EMITIDO --> INVALIDADO : Cancelamento / Estorno
+
+  UTILIZADO --> [*]
+  INVALIDADO --> [*]
+}
+
+@enduml

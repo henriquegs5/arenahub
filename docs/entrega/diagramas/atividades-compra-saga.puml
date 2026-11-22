@@ -1,0 +1,99 @@
+@startuml atividades-compra-saga
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam activityBorderColor #1E3A8A
+skinparam activityBackgroundColor #EFF6FF
+skinparam activityDiamondBorderColor #1E3A8A
+skinparam activityDiamondBackgroundColor #DBEAFE
+
+title ArenaHub — Diagrama de Atividades: Saga da Compra de Ingressos (Coreografada)
+
+start
+
+:Participante submete formulário de compra (POST /api/ingressos/compras);
+:Gateway autentica JWT e valida payload;
+
+partition "Ingressos" {
+  :Cria registro de Pedido com status **PENDENTE**;
+  :Grava evento **compra.solicitada.v1** na Outbox;
+  :Responde **HTTP 202 Accepted** (Processamento Assíncrono);
+}
+
+partition "RabbitMQ" {
+  :Publica evento **compra.solicitada.v1**;
+}
+
+partition "Eventos" {
+  :Consome **compra.solicitada.v1**;
+  :Verifica disponibilidade de lugares (Chain of Responsibility);
+  if (Capacidade e janela de vendas OK?) then (sim)
+    :Efetua reserva de lugares (transação ACID);
+    :Grava evento **lugares.reservados.v1** na Outbox;
+  else (não)
+    :Grava evento **reserva.recusada.v1** na Outbox;
+    stop
+  endif
+}
+
+partition "RabbitMQ" {
+  :Publica evento **lugares.reservados.v1**;
+}
+
+partition "Ingressos" {
+  :Consome **lugares.reservados.v1**;
+  :Atualiza pedido para **AGUARDANDO_PAGAMENTO**;
+  :Grava evento **pagamento.solicitado.v1** na Outbox;
+}
+
+partition "RabbitMQ" {
+  :Publica evento **pagamento.solicitado.v1**;
+}
+
+partition "Pagamento" {
+  :Consome **pagamento.solicitado.v1**;
+  :Processa cobrança via Strategy (Meio de Pagamento + Adapter);
+  if (Pagamento Aprovado?) then (sim)
+    :Registra transação **APROVADO**;
+    :Grava evento **pagamento.aprovado.v1** na Outbox;
+  else (não / recusa / 66 centavos)
+    :Registra transação **RECUSADO**;
+    :Grava evento **pagamento.recusado.v1** na Outbox;
+  endif
+}
+
+partition "RabbitMQ" {
+  :Roteia resposta de pagamento;
+}
+
+if (Pagamento Aprovado?) then (sim)
+  partition "Ingressos (Conclusão)" {
+    :Consome **pagamento.aprovado.v1**;
+    :Emite ingressos digitais com hash e QR code único;
+    :Atualiza pedido para **CONCLUIDO**;
+    :Grava evento **ingresso.emitido.v1** na Outbox;
+  }
+  partition "Notificações" {
+    :Consome **ingresso.emitido.v1**;
+    :Dispara aviso de confirmação via Observer;
+  }
+else (não)
+  partition "Compensação (Rollback)" {
+    partition "Ingressos" {
+      :Consome **pagamento.recusado.v1**;
+      :Atualiza pedido para **RECUSADO** / **CANCELADO**;
+      :Grava evento **pedido.cancelado.v1** na Outbox;
+    }
+    partition "Eventos" {
+      :Consome **pedido.cancelado.v1**;
+      :Desfaz reserva e devolve lugares ao estoque (Idempotente);
+    }
+    partition "Notificações" {
+      :Consome **pagamento.recusado.v1**;
+      :Notifica participante sobre recusa da cobrança;
+    }
+  }
+endif
+
+stop
+
+@enduml

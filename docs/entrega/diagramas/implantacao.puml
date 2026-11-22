@@ -1,0 +1,93 @@
+@startuml implantacao
+skinparam componentStyle uml2
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam packageBackgroundColor #F8FAFC
+skinparam nodeBackgroundColor #EFF6FF
+skinparam componentBackgroundColor #FFFFFF
+
+title ArenaHub — Diagrama de Implantação (Docker & Microsserviços Python 3.12)
+
+node "Host / Docker Engine" {
+
+  node "Rede arenahub-net (Bridge)" {
+
+    node "Frontend Container\n(nginx + Vite React)" as FrontContainer {
+      portin "Port 80 -> 3000" as pFront
+      component [SPA React (TypeScript)] as FrontApp
+    }
+
+    node "Gateway Container\n(Python 3.12 / FastAPI)" as GtwContainer {
+      portin "Port 8080 -> 8080" as pGtw
+      component [API Gateway\nReverse Proxy + Circuit Breaker\nAutenticação JWT] as GtwApp
+    }
+
+    node "Eventos Container\n(Python 3.12 / FastAPI)" as EvtContainer {
+      portin "Port 3001 (Interna)" as pEvt
+      component [Serviço de Eventos\nComposite + State + Strategy] as EvtApp
+    }
+
+    node "Ingressos Container\n(Python 3.12 / FastAPI)" as IngContainer {
+      portin "Port 3002 (Interna)" as pIng
+      component [Serviço de Ingressos\nCommand + State + Chain] as IngApp
+    }
+
+    node "Pagamento Container\n(Python 3.12 / FastAPI)" as PagContainer {
+      portin "Port 3003 (Interna)" as pPag
+      component [Serviço de Pagamento\nStrategy + Factory + Adapter] as PagApp
+    }
+
+    node "Notificações Container\n(Python 3.12 / FastAPI)" as NotContainer {
+      portin "Port 3004 (Interna)" as pNot
+      component [Serviço de Notificações\nObserver + Adapter] as NotApp
+    }
+
+    node "PostgreSQL Container\n(PostgreSQL 16 Alpine)" as PgContainer {
+      database "gateway_db" as dbGtw
+      database "eventos_db" as dbEvt
+      database "ingressos_db" as dbIng
+      database "pagamento_db" as dbPag
+      database "notificacoes_db" as dbNot
+    }
+
+    node "RabbitMQ Container\n(RabbitMQ 3.13 Management)" as RmqContainer {
+      queue "arenahub.events\n(Topic Exchange)" as Exch
+      queue "eventos.events.q" as qEvt
+      queue "ingressos.events.q" as qIng
+      queue "pagamento.events.q" as qPag
+      queue "notificacoes.events.q" as qNot
+    }
+  }
+}
+
+actor "Cliente / Navegador" as User
+User --> pFront : HTTP:3000
+FrontApp --> pGtw : HTTP/REST :8080
+
+GtwApp --> pEvt : HTTP Reverse Proxy
+GtwApp --> pIng : HTTP Reverse Proxy
+GtwApp --> pPag : HTTP Reverse Proxy
+GtwApp --> pNot : HTTP Reverse Proxy
+
+GtwApp ..> dbGtw : TCP/5432
+EvtApp ..> dbEvt : TCP/5432
+IngApp ..> dbIng : TCP/5432
+PagApp ..> dbPag : TCP/5432
+NotApp ..> dbNot : TCP/5432
+
+EvtApp --> Exch : AMQP (Outbox)
+IngApp --> Exch : AMQP (Outbox)
+PagApp --> Exch : AMQP (Outbox)
+GtwApp --> Exch : AMQP (Outbox)
+
+Exch --> qEvt
+Exch --> qIng
+Exch --> qPag
+Exch --> qNot
+
+qEvt --> EvtApp : AMQP Consume
+qIng --> IngApp : AMQP Consume
+qPag --> PagApp : AMQP Consume
+qNot --> NotApp : AMQP Consume
+
+@enduml

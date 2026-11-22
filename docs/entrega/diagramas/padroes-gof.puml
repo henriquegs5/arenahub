@@ -1,0 +1,133 @@
+@startuml padroes-gof
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam classBackgroundColor #F8FAFC
+skinparam classBorderColor #1E3A8A
+
+title ArenaHub — Diagrama de Classes dos Padrões GoF (Implementação Python 3.12)
+
+package "Composite (services/eventos/src/estrutura.py)" {
+  abstract class ComponenteEvento {
+    +id: str
+    +nome: str
+    {abstract} +capacidade(): int
+    {abstract} +reservados(): int
+    {abstract} +disponiveis(): int
+    {abstract} +preco_minimo(): Optional[int]
+  }
+
+  class EventoComposto {
+    +setores: List[Setor]
+    +adicionar(setor: Setor): EventoComposto
+    +capacidade(): int
+    +reservados(): int
+    +disponiveis(): int
+  }
+
+  class Setor {
+    +lotes: List[Lote]
+    +adicionar(lote: Lote): Setor
+    +capacidade(): int
+    +reservados(): int
+  }
+
+  class Lote {
+    +preco_centavos: int
+    +capacidade_lote: int
+    +reservados_lote: int
+    +capacidade(): int
+    +reservados(): int
+    +disponiveis(): int
+  }
+
+  ComponenteEvento <|-- EventoComposto
+  ComponenteEvento <|-- Setor
+  ComponenteEvento <|-- Lote
+  EventoComposto *--> Setor
+  Setor *--> Lote
+}
+
+package "State (services/eventos/src/estados.py)" {
+  abstract class EstadoEvento {
+    +nome: str
+    +visivel_no_catalogo(): bool
+    +aceita_vendas(): bool
+    +publicar(): EstadoEvento
+    +abrir_vendas(): EstadoEvento
+    +encerrar_vendas(): EstadoEvento
+    +realizar(): EstadoEvento
+    +cancelar(): EstadoEvento
+  }
+  class RascunhoState
+  class PublicadoState
+  class VendasAbertasState
+  class VendasEncerradasState
+  class RealizadoState
+  class CanceladoState
+
+  EstadoEvento <|-- RascunhoState
+  EstadoEvento <|-- PublicadoState
+  EstadoEvento <|-- VendasAbertasState
+  EstadoEvento <|-- VendasEncerradasState
+  EstadoEvento <|-- RealizadoState
+  EstadoEvento <|-- CanceladoState
+}
+
+package "Strategy & Factory Method (services/pagamento/src/meios.py)" {
+  abstract class EstrategiaMeioPagamento {
+    +codigo: str
+    +nome: str
+    {abstract} +cobrar(transacao_id, valor, token): ResultadoCobranca
+  }
+  class MeioPix
+  class MeioCartaoCredito
+  class MeioBoleto
+  class MeioCartaoRecusado
+
+  EstrategiaMeioPagamento <|-- MeioPix
+  EstrategiaMeioPagamento <|-- MeioCartaoCredito
+  EstrategiaMeioPagamento <|-- MeioBoleto
+  EstrategiaMeioPagamento <|-- MeioCartaoRecusado
+
+  abstract class CriadorMeioPagamento {
+    {abstract} +criar(): EstrategiaMeioPagamento
+  }
+  class CriadorPix
+  class CriadorCartaoCredito
+
+  CriadorMeioPagamento <|-- CriadorPix
+  CriadorMeioPagamento <|-- CriadorCartaoCredito
+  CriadorPix ..> MeioPix : <<creates>>
+  CriadorCartaoCredito ..> MeioCartaoCredito : <<creates>>
+}
+
+package "Observer (services/notificacoes/src/observer.py)" {
+  interface ObservadorEvento {
+    +notificar(evento: Dict): Coroutine
+  }
+  class DespachanteEventos {
+    -observadores: Dict[str, List[ObservadorEvento]]
+    +inscrever(topico: str, obs: ObservadorEvento)
+    +despachar(topico: str, evento: Dict): Coroutine
+  }
+  class ObservadorCompra
+  class ObservadorEstorno
+
+  DespachanteEventos o--> ObservadorEvento
+  ObservadorEvento <|.. ObservadorCompra
+  ObservadorEvento <|.. ObservadorEstorno
+}
+
+package "Adapter (services/pagamento/src/provedor.py)" {
+  interface ProvedorPagamentoTarget {
+    +autorizar(pedido_id, valor, dados): ResultadoAutorizacao
+  }
+  class ProvedorSimuladoAdapter {
+    -api_simulada: ApiExternaSimulada
+    +autorizar(pedido_id, valor, dados): ResultadoAutorizacao
+  }
+  ProvedorPagamentoTarget <|.. ProvedorSimuladoAdapter
+}
+
+@enduml

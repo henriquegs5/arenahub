@@ -142,10 +142,10 @@ export async function marcarNaoLida(id: string): Promise<boolean> {
   return (r.rowCount ?? 0) > 0;
 }
 
-/** Marca como lidos todos os avisos do usuário. Devolve quantos mudaram. */
-export async function marcarTodasLidas(usuarioId: string): Promise<number> {
+/** Marca como lidos todos os avisos do usuário (ou de todos se null). Devolve quantos mudaram. */
+export async function marcarTodasLidas(usuarioId: string | null): Promise<number> {
   const r = await pool.query(
-    "UPDATE notificacoes SET lida_em = now() WHERE usuario_id = $1 AND lida_em IS NULL",
+    "UPDATE notificacoes SET lida_em = now() WHERE ($1::uuid IS NULL OR usuario_id = $1) AND lida_em IS NULL",
     [usuarioId]
   );
   return r.rowCount ?? 0;
@@ -156,10 +156,10 @@ export async function remover(id: string): Promise<boolean> {
   return (r.rowCount ?? 0) > 0;
 }
 
-/** Limpeza em massa: descarta os avisos já lidos do usuário. */
-export async function removerLidas(usuarioId: string): Promise<number> {
+/** Limpeza em massa: descarta os avisos já lidos do usuário (ou de todos se null). */
+export async function removerLidas(usuarioId: string | null): Promise<number> {
   const r = await pool.query(
-    "DELETE FROM notificacoes WHERE usuario_id = $1 AND lida_em IS NOT NULL", [usuarioId]
+    "DELETE FROM notificacoes WHERE ($1::uuid IS NULL OR usuario_id = $1) AND lida_em IS NOT NULL", [usuarioId]
   );
   return r.rowCount ?? 0;
 }

@@ -1,0 +1,21 @@
+@startuml estados-disjuntor
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam stateBackgroundColor #EFF6FF
+skinparam stateBorderColor #1E3A8A
+
+title ArenaHub — Máquina de Estados do Circuit Breaker (API Gateway)
+
+[*] --> FECHADO : Inicialização
+
+FECHADO : Operação Normal\nRequisições repassadas ao serviço de destino
+ABERTO : Falha Detectada\nRequisições rejeitadas imediatamente com fallback (HTTP 502)
+MEIO_ABERTO : Teste de Recuperação\nPermite tráfego sonda para avaliar se o serviço voltou
+
+FECHADO --> ABERTO : falhas_consecutivas >= LIMIAR_FALHAS (3)
+ABERTO --> MEIO_ABERTO : decorridos TEMPO_RESET_MS (8000ms)
+
+MEIO_ABERTO --> FECHADO : sonda bem-sucedida (HTTP 2xx)
+MEIO_ABERTO --> ABERTO : sonda falha (ConnectionRefused / HTTP 5xx)
+
+@enduml

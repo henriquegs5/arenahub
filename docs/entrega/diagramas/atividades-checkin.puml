@@ -1,0 +1,49 @@
+@startuml atividades-checkin
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam activityBorderColor #1E3A8A
+skinparam activityBackgroundColor #EFF6FF
+skinparam activityDiamondBorderColor #1E3A8A
+skinparam activityDiamondBackgroundColor #DBEAFE
+
+title ArenaHub — Diagrama de Atividades: Validação de Ingresso (Check-in no Portão)
+
+start
+
+:Porteiro / Organizador lê o QR Code do ingresso (POST /api/ingressos/checkin);
+:Gateway intercepta requisição, valida JWT e autoriza papel (ORGANIZADOR ou ADM);
+
+partition "Ingressos (ComandoValidarEntrada)" {
+  :Busca ingresso pelo código unívoco no banco de dados;
+
+  if (Código existe no sistema?) then (não)
+    :Retorna **aprovado: false**, motivo: "código não encontrado";
+    stop
+  endif
+
+  if (Usuário é o organizador do evento ou ADM?) then (não)
+    :Retorna **aprovado: false**, motivo: "não autorizado para este evento";
+    stop
+  endif
+
+  :Executa verificação atômica de estado:
+  UPDATE ingressos SET status = 'UTILIZADO', utilizado_em = NOW()
+  WHERE codigo = :cod AND status = 'EMITIDO';
+
+  if (Linha foi atualizada?) then (sim - 1ª Leitura)
+    :Registra histórico da validação (Command pattern);
+    :Retorna **HTTP 200 { aprovado: true, motivo: null, titular: ... }**;
+    :Libera catraca / entrada do participante;
+  else (não - 2ª Leitura ou Cancelado)
+    if (Status atual == 'UTILIZADO') then (sim)
+      :Retorna **HTTP 200 { aprovado: false, motivo: "este ingresso já foi utilizado na entrada" }**;
+    else (cancelado / invalidado)
+      :Retorna **HTTP 200 { aprovado: false, motivo: "ingresso cancelado ou inválido" }**;
+    endif
+    :Recusa entrada na catraca;
+  endif
+}
+
+stop
+
+@enduml

@@ -118,9 +118,7 @@ router.get("/contador", async (req: Request, res: Response) => {
 router.post("/lidas", async (req: Request, res: Response) => {
   try {
     const a = exigir(req, res); if (!a) return;
-    // Mesmo o ADM marca apenas os PRÓPRIOS avisos: marcar os de todo mundo
-    // não teria sentido e seria destrutivo.
-    res.json({ marcadas: await repo.marcarTodasLidas(a.id) });
+    res.json({ marcadas: await repo.marcarTodasLidas(escopo(a)) });
   } catch (e) { tratar(res, e); }
 });
 
@@ -145,11 +143,11 @@ router.post("/:id/nao-lida", async (req: Request, res: Response) => {
 
 // ---------- excluir ----------
 
-/** Limpeza em massa: descarta os avisos JÁ LIDOS do próprio usuário. */
+/** Limpeza em massa: descarta os avisos JÁ LIDOS do próprio escopo. */
 router.delete("/lidas", async (req: Request, res: Response) => {
   try {
     const a = exigir(req, res); if (!a) return;
-    res.json({ removidas: await repo.removerLidas(a.id) });
+    res.json({ removidas: await repo.removerLidas(escopo(a)) });
   } catch (e) { tratar(res, e); }
 });
 

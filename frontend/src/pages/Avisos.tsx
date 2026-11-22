@@ -33,7 +33,7 @@ export function Avisos({ aoMudarLidas }: { aoMudarLidas: () => void }) {
 
   const recarregar = async () => {
     try {
-      setItens(await api<Notificacao[]>("GET", "notificacoes/minhas?limite=50"));
+      setItens(await api<Notificacao[]>("GET", "notificacoes?limite=50"));
       setErro(null);
     } catch (e) {
       setErro(`${(e as Error).message}. As outras páginas continuam funcionando normalmente.`);

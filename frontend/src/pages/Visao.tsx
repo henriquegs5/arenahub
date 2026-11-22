@@ -27,7 +27,7 @@ export function Visao({ ctx, ir }: { ctx: Ctx; ir: (p: PaginaId) => void }) {
         participante || ctx.eu.papel === "ADM"
           ? api<Ingresso[]>("GET", "ingressos?limite=100").catch(() => [] as Ingresso[])
           : Promise.resolve([] as Ingresso[]),
-        api<Notificacao[]>("GET", "notificacoes/minhas?limite=6").catch(() => [] as Notificacao[]),
+        api<Notificacao[]>("GET", "notificacoes?limite=6").catch(() => [] as Notificacao[]),
       ]);
       return { eventos, pedidos, ingressos, avisos };
     },

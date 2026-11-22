@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>ArenaHub — Descrição Arquitetural do Sistema</title>
+<style>
+@page {
+    size: A4;
+    margin: 22mm 18mm 22mm 18mm;
+    @bottom-right {
+        content: counter(page);
+        font-family: 'DejaVu Sans', Arial, sans-serif;
+        font-size: 9pt;
+        color: #64748b;
+    }
+}
+body {
+    font-family: 'DejaVu Sans', 'Liberation Sans', 'Segoe UI', Arial, sans-serif;
+    color: #1e293b;
+    line-height: 1.6;
+    font-size: 10.5pt;
+}
+.cover {
+    page-break-after: always;
+    text-align: center;
+    padding-top: 40px;
+}
+.institution {
+    font-size: 14pt;
+    font-weight: bold;
+    color: #0f172a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+.department {
+    font-size: 11pt;
+    color: #475569;
+    margin-bottom: 25px;
+}
+.discipline {
+    font-size: 12pt;
+    font-weight: 600;
+    color: #1e40af;
+    background-color: #eff6ff;
+    display: inline-block;
+    padding: 6px 18px;
+    border-radius: 20px;
+    border: 1px solid #bfdbfe;
+    margin-bottom: 60px;
+}
+.main-title {
+    font-size: 24pt;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.25;
+    margin-bottom: 15px;
+}
+.subtitle {
+    font-size: 14pt;
+    color: #334155;
+    font-weight: 500;
+    margin-bottom: 80px;
+}
+.meta-box {
+    margin-top: 100px;
+    text-align: left;
+    display: inline-block;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 5px solid #1e40af;
+    padding: 16px 24px;
+    border-radius: 6px;
+    width: 80%;
+    font-size: 10pt;
+}
+.meta-box p { margin: 4px 0; }
+.cover-date {
+    margin-top: 80px;
+    font-size: 11pt;
+    color: #64748b;
+    font-weight: 600;
+}
+.page-break {
+    page-break-after: always;
+}
+h1 {
+    font-size: 18pt;
+    color: #0f172a;
+    border-bottom: 2px solid #2563eb;
+    padding-bottom: 6px;
+    margin-top: 30px;
+    margin-bottom: 16px;
+}
+h2 {
+    font-size: 14pt;
+    color: #1e3a8a;
+    border-bottom: 1px solid #cbd5e1;
+    padding-bottom: 4px;
+    margin-top: 24px;
+    margin-bottom: 12px;
+}
+h3 {
+    font-size: 12pt;
+    color: #1d4ed8;
+    margin-top: 18px;
+    margin-bottom: 8px;
+}
+p {
+    margin: 8px 0;
+    text-align: justify;
+}
+ul, ol {
+    margin: 8px 0 12px 24px;
+}
+li {
+    margin-bottom: 4px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 9.5pt;
+}
+th, td {
+    border: 1px solid #cbd5e1;
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+th {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    font-weight: 700;
+}
+tr:nth-child(even) {
+    background-color: #f8fafc;
+}
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 8pt;
+    font-weight: bold;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+.badge-creation { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+.badge-structural { background-color: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+.badge-behavioral { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.badge-arch { background-color: #fae8ff; color: #86198f; border: 1px solid #f5d0fe; }
+
+.alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin: 14px 0;
+    font-size: 9.5pt;
+}
+.alert-info {
+    background-color: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    color: #1e3a8a;
+}
+.alert-warning {
+    background-color: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    color: #92400e;
+}
+.alert-success {
+    background-color: #f0fdf4;
+    border-left: 4px solid #22c55e;
+    color: #166534;
+}
+.code-box {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 12px 0;
+    overflow-x: auto;
+}
+pre.highlight {
+    margin: 0;
+    font-family: 'DejaVu Sans Mono', 'Consolas', monospace;
+    font-size: 8.5pt;
+    line-height: 1.45;
+    color: #0f172a;
+}
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.highlight .hll { background-color: #ffffcc }
+.highlight { background: #f8f8f8; }
+.highlight .c { color: #3D7B7B; font-style: italic } /* Comment */
+.highlight .err { border: 1px solid #FF0000 } /* Error */
+.highlight .k { color: #008000; font-weight: bold } /* Keyword */
+.highlight .o { color: #666666 } /* Operator */
+.highlight .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.highlight .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: #9C6500 } /* Comment.Preproc */
+.highlight .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.highlight .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.highlight .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.highlight .gd { color: #A00000 } /* Generic.Deleted */
+.highlight .ge { font-style: italic } /* Generic.Emph */
+.highlight .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.highlight .gr { color: #E40000 } /* Generic.Error */
+.highlight .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.highlight .gi { color: #008400 } /* Generic.Inserted */
+.highlight .go { color: #717171 } /* Generic.Output */
+.highlight .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.highlight .gs { font-weight: bold } /* Generic.Strong */
+.highlight .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.highlight .gt { color: #0044DD } /* Generic.Traceback */
+.highlight .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.highlight .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.highlight .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.highlight .kp { color: #008000 } /* Keyword.Pseudo */
+.highlight .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.highlight .kt { color: #B00040 } /* Keyword.Type */
+.highlight .m { color: #666666 } /* Literal.Number */
+.highlight .s { color: #BA2121 } /* Literal.String */
+.highlight .na { color: #687822 } /* Name.Attribute */
+.highlight .nb { color: #008000 } /* Name.Builtin */
+.highlight .nc { color: #0000FF; font-weight: bold } /* Name.Class */
+.highlight .no { color: #880000 } /* Name.Constant */
+.highlight .nd { color: #AA22FF } /* Name.Decorator */
+.highlight .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.highlight .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.highlight .nf { color: #0000FF } /* Name.Function */
+.highlight .nl { color: #767600 } /* Name.Label */
+.highlight .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+.highlight .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.highlight .nv { color: #19177C } /* Name.Variable */
+.highlight .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+.highlight .w { color: #bbbbbb } /* Text.Whitespace */
+.highlight .mb { color: #666666 } /* Literal.Number.Bin */
+.highlight .mf { color: #666666 } /* Literal.Number.Float */
+.highlight .mh { color: #666666 } /* Literal.Number.Hex */
+.highlight .mi { color: #666666 } /* Literal.Number.Integer */
+.highlight .mo { color: #666666 } /* Literal.Number.Oct */
+.highlight .sa { color: #BA2121 } /* Literal.String.Affix */
+.highlight .sb { color: #BA2121 } /* Literal.String.Backtick */
+.highlight .sc { color: #BA2121 } /* Literal.String.Char */
+.highlight .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.highlight .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.highlight .s2 { color: #BA2121 } /* Literal.String.Double */
+.highlight .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.highlight .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.highlight .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.highlight .sx { color: #008000 } /* Literal.String.Other */
+.highlight .sr { color: #A45A77 } /* Literal.String.Regex */
+.highlight .s1 { color: #BA2121 } /* Literal.String.Single */
+.highlight .ss { color: #19177C } /* Literal.String.Symbol */
+.highlight .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.highlight .fm { color: #0000FF } /* Name.Function.Magic */
+.highlight .vc { color: #19177C } /* Name.Variable.Class */
+.highlight .vg { color: #19177C } /* Name.Variable.Global */
+.highlight .vi { color: #19177C } /* Name.Variable.Instance */
+.highlight .vm { color: #19177C } /* Name.Variable.Magic */
+.highlight .il { color: #666666 } /* Literal.Number.Integer.Long */
+</style>
+</head>
+<body>
+
+<div class="cover">
+    <div class="institution">Centro Federal de Educação Tecnológica Celso Suckow da Fonseca — CEFET/RJ</div>
+    <div class="department">Departamento de Informática — Bacharelado em Ciência da Computação</div>
+    <div class="discipline">Disciplina: Arquitetura e Padrões de Software (2026.1)</div>
+    
+    <div class="main-title">ArenaHub — Plataforma de Eventos e Venda de Ingressos</div>
+    <div class="subtitle">Documento 2: Descrição Arquitetural do Sistema<br>Stakeholders, Preocupações (ISO/IEC 25010), Viewpoints e Perspectivas (Rozanski & Woods)</div>
+    
+    <div class="meta-box">
+        <p><strong>Professor:</strong> Dr. Marcelo Rodrigues Arêas (marcelo.rodrigues@cefet-rj.br)</p>
+        <p><strong>Equipe / Grupo:</strong> Grupo 5 — ArenaHub</p>
+        <p><strong>Fundamentação Teórica:</strong> Rozanski & Woods (2011), ISO/IEC 42010:2011, ISO/IEC 25010</p>
+        <p><strong>Stack Tecnológica:</strong> Python 3.12 (FastAPI), React, Docker, PostgreSQL, RabbitMQ</p>
+    </div>
+    
+    <div class="cover-date">Rio de Janeiro — 2026</div>
+</div>
+
+<h1>1. Identificação do Sistema, Escopo e Princípios Fundamentais</h1>
+<p>
+Em conformidade com a norma internacional <strong>ISO/IEC 42010:2011</strong> (<em>Systems and software engineering — Architecture description</em>), a arquitetura de um sistema expressa seus conceitos fundamentais e propriedades em seu ambiente de operação, materializados em seus elementos, relacionamentos e nos princípios que regem seu projeto e evolução ao longo do tempo.
+</p>
+<p>
+O <strong>ArenaHub</strong> é um sistema distribuído de missão crítica para gestão completa e comercialização de ingressos em arenas de e-sports e convenções culturais gamer.
+</p>
+
+<h2>Princípios de Projeto e Evolução (Rozanski & Woods)</h2>
+<p>
+Segundo Nick Rozanski e Eoin Woods (2011), a declaração explícita de princípios arquiteturais serve como guia normativo para a equipe técnica em momentos de tomada de decisão. O ArenaHub foi projetado sob quatro princípios pétreos:
+</p>
+<ol>
+    <li><strong>Isolamento Estrito de Domínio (Database per Service):</strong> Nenhum microsserviço acessa dados de outro diretamente via rede de banco de dados. Informações compartilhadas viajam exclusivamente como eventos versionados no broker.</li>
+    <li><strong>Consistência Eventual Guiada por Compensação (Saga Pattern):</strong> Em vez de bloquear recursos com transações distribuídas (2PC), o sistema tolera consistência eventual com compensações automáticas em caso de falha de cobrança.</li>
+    <li><strong>Zero Armazenamento de Dados Sensíveis de Pagamento (PCI-DSS Compliance):</strong> O sistema jamais grava números de cartões, datas de validade ou CVVs. O pagamento manipula apenas referências opacas (tokens) fornecidas pelo navegador do comprador, com mascaramento obrigatório em logs (<code>****1234</code>).</li>
+    <li><strong>Resiliência Assíncrona e Degradação Graciosa:</strong> A indisponibilidade de serviços acessórios (como Pagamento ou Notificações) não impede a visualização de catálogos, exibição de ingressos já adquiridos ou validação de check-in na entrada da arena.</li>
+</ol>
+
+<h1>2. Partes Interessadas (Stakeholders) e Preocupações (Concerns)</h1>
+<p>
+Uma arquitetura bem-sucedida é aquela que identifica e balanceia harmoniosamente as preocupações (<em>concerns</em>) de todas as partes interessadas. Baseando-se na taxonomia canônica de <strong>Rozanski & Woods (Capítulo 3)</strong>, identificamos nove papéis de stakeholders para o ArenaHub:
+</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Stakeholder</th>
+            <th>Caracterização no Domínio do ArenaHub</th>
+            <th>Preocupações Principais (Concerns)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Acquirers</strong></td>
+            <td>Organizadores e promotores dos torneios de e-sports que contratam a plataforma para monetizar seus eventos.</td>
+            <td>Custo operacional por transação, velocidade no fechamento de lotes, relatórios de conversão e proteção contra fraude.</td>
+        </tr>
+        <tr>
+            <td><strong>Assessors</strong></td>
+            <td>Corpo docente (Prof. Marcelo Arêas), auditores de código e reguladores de proteção de dados (LGPD).</td>
+            <td>Aderência estrita aos padrões GoF, conformidade com a ISO/IEC 25010 e ausência de vazamento de cartões de crédito.</td>
+        </tr>
+        <tr>
+            <td><strong>Communicators</strong></td>
+            <td>Redatores de manuais técnicos, documentadores de API (Swagger/OpenAPI) e instrutores de suporte.</td>
+            <td>Documentação clara dos endpoints REST, dicionário de eventos e guias operacionais da stack.</td>
+        </tr>
+        <tr>
+            <td><strong>Developers</strong></td>
+            <td>Engenheiros de software responsáveis pelo desenvolvimento do backend em Python e frontend em React.</td>
+            <td>Clareza arquitetural, facilidade de depuração com FastAPI, contratos estritos de JSON Schema e cobertura de testes.</td>
+        </tr>
+        <tr>
+            <td><strong>Maintainers</strong></td>
+            <td>Equipe de DevOps/SRE encarregada de manter a infraestrutura de contêineres e filas em produção.</td>
+            <td>Facilidade de build, consumo moderado de CPU/memória, logs estruturados e filas de Dead Letter (DLQ).</td>
+        </tr>
+        <tr>
+            <td><strong>Suppliers</strong></td>
+            <td>Provedores externos de infraestrutura (Docker, RabbitMQ, PostgreSQL) e gateways de pagamento simulados.</td>
+            <td>Padronização de protocolos de rede (AMQP 0-9-1, HTTP/REST, TCP/IP) e estabilidade de conexões assíncronas.</td>
+        </tr>
+        <tr>
+            <td><strong>Support Staff</strong></td>
+            <td>Operadores da central de atendimento ao fã e monitores do portão de entrada durante o evento presencial.</td>
+            <td>Agilidade na consulta do estado do pedido, estornos com 1 clique e resolução rápida de ingressos recusados no check-in.</td>
+        </tr>
+        <tr>
+            <td><strong>System Administrators</strong></td>
+            <td>Administradores da infraestrutura de servidores Linux e gerenciadores de segurança do API Gateway.</td>
+            <td>Mecanismos de autenticação JWT, proteção do Circuit Breaker contra saturação e monitoramento do <code>/status</code>.</td>
+        </tr>
+        <tr>
+            <td><strong>Users</strong></td>
+            <td>Compradores dos ingressos (fãs de e-sports, participantes) e bilheteiros na catraca física do evento.</td>
+            <td>Tempo de resposta imediato na compra, emissão garantida de QR Code legível e recebimento ágil de avisos.</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="page-break"></div>
+
+<h2>Mapeamento de Preocupações segundo o Modelo de Qualidade ISO/IEC 25010</h2>
+<p>
+Para estruturar rigorosamente os requisitos não-funcionais, as preocupações dos stakeholders foram correlacionadas com as 8 características de qualidade de produto de software da <strong>ISO/IEC 25010</strong>:
+</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Característica ISO/IEC 25010</th>
+            <th>Subcaracterísticas Chave</th>
+            <th>Tratamento Arquitetural Concreto no ArenaHub</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Adequação Funcional</strong></td>
+            <td>Completude, Corretude, Pertinência</td>
+            <td>Saga de compra ponta a ponta, check-in anti-duplicidade, 4 microsserviços de domínio e Gateway centralizador.</td>
+        </tr>
+        <tr>
+            <td><strong>Eficiência de Desempenho</strong></td>
+            <td>Comportamento temporal, Utilização de recursos</td>
+            <td>FastAPI + asyncpg com I/O assíncrono não-bloqueante; resposta HTTP 202 com deferimento de processamento em fila.</td>
+        </tr>
+        <tr>
+            <td><strong>Compatibilidade</strong></td>
+            <td>Coexistência, Interoperabilidade</td>
+            <td>Contratos de eventos agnósticos em JSON Schema (<code>contracts/events/*.json</code>); interfaces REST em JSON.</td>
+        </tr>
+        <tr>
+            <td><strong>Usabilidade</strong></td>
+            <td>Apreensibilidade, Proteção a erros do usuário</td>
+            <td>Bloqueio inteligente de botões quando serviços dependentes falham; mensagens amigáveis em vez de crashes de tela.</td>
+        </tr>
+        <tr>
+            <td><strong>Confiabilidade</strong></td>
+            <td>Maturidade, Tolerância a falhas, Recuperabilidade</td>
+            <td>Circuit Breaker no Gateway; Transactional Outbox; filas duráveis do RabbitMQ; expiração autônoma de reservas órfãs.</td>
+        </tr>
+        <tr>
+            <td><strong>Segurança</strong></td>
+            <td>Confidencialidade, Integridade, Autenticidade</td>
+            <td>Autenticação JWT stateless com RBAC (ADM/ORG/PARTICIPANTE); tokenização de pagamentos sem persistência de CVV.</td>
+        </tr>
+        <tr>
+            <td><strong>Manutenibilidade</strong></td>
+            <td>Modularidade, Modificabilidade, Testabilidade</td>
+            <td>Separação em microsserviços; desacoplamento por padrões GoF (Strategy, State, Factory, Composite, Observer, Command).</td>
+        </tr>
+        <tr>
+            <td><strong>Portabilidade</strong></td>
+            <td>Adaptabilidade, Instalabilidade</td>
+            <td>Containerização 100% Docker com <code>docker-compose.yml</code> reprodutível em Linux, Windows e macOS.</td>
+        </tr>
+    </tbody>
+</table>
+
+<h1>3. Visões e Pontos de Vista Arquiteturais (Rozanski & Woods)</h1>
+
+<h2>3.1 Ponto de Vista Funcional (Functional Viewpoint)</h2>
+<p>
+Descreve os elementos funcionais da arquitetura, suas responsabilidades, interfaces e interações:
+</p>
+<ul>
+    <li><strong>Serviço de Eventos (porta 3001):</strong> Cadastro de eventos, hierarquia de setores e lotes (Composite), ciclo de vida do evento (State), cálculo de preços (Strategy/Factory Method), validação e reserva atômica de lugares.</li>
+    <li><strong>Serviço de Ingressos (porta 3002):</strong> Coordenação da compra (Saga), validações de pré-requisitos (Chain of Responsibility), emissão de ingressos com código unívoco, execução de ações transacionais com histórico (Command) e validação de check-in no portão.</li>
+    <li><strong>Serviço de Pagamento (porta 3003):</strong> Cobrança e estorno através de estratégias especializadas por meio de pagamento (Strategy/Factory Method), integração com gateway bancário externo (Adapter) e gatilhos de recusa para demonstração.</li>
+    <li><strong>Serviço de Notificações (porta 3004):</strong> Recepção assíncrona de eventos de domínio e despacho desacoplado de avisos em tempo real ao comprador (Observer/Adapter).</li>
+    <li><strong>API Gateway (porta 8080):</strong> Ponto único de entrada (Facade), validação criptográfica de tokens e injeção de headers de identidade (Protection Proxy), e disjuntores de falha em tempo real (State Circuit Breaker).</li>
+</ul>
+
+<h2>3.2 Ponto de Vista de Informação (Information Viewpoint)</h2>
+<p>
+Descreve como as informações são modeladas, manipuladas e armazenadas:
+</p>
+<ul>
+    <li><strong>Database per Service:</strong> O PostgreSQL abriga cinco bancos estanques: <code>eventos_db</code>, <code>ingressos_db</code>, <code>pagamento_db</code>, <code>notificacoes_db</code> e <code>gateway_db</code>.</li>
+    <li><strong>Contratos de Mensageria:</strong> 17 esquemas JSON estritos definem as mensagens trafegadas no RabbitMQ, versionadas semanticamente (ex.: <code>compra.solicitada.v1</code>). Todos os contratos são validados pelo script <code>check-contratos.py</code>.</li>
+    <li><strong>Ciclo dos Dados:</strong> Pedidos nascem como <code>PENDENTE</code> e transitam por eventos imutáveis até o estado terminal <code>CONCLUIDO</code> ou <code>CANCELADO</code>. Ingressos possuem chave de unicidade no código aleatório gerado (ex.: <code>ARENA-XXXX-XXXX-XXXX</code>).</li>
+</ul>
+
+<h2>3.3 Ponto de Vista de Concorrência (Concurrency Viewpoint)</h2>
+<p>
+Aborda como o sistema lida com execução paralela e condições de corrida:
+</p>
+<ul>
+    <li><strong>Reserva de Ingressos Concorrente:</strong> A verificação e o decremento de lugares disponíveis ocorrem dentro de transações PostgreSQL isoladas utilizando instruções atômicas de atualização (<code>UPDATE lotes SET reservados = reservados + $1 WHERE id = $2 AND (capacidade - reservados) >= $1</code>), eliminando <em>overbooking</em> mesmo durante aberturas massivas de vendas.</li>
+    <li><strong>Check-in Simultâneo (Anti-fraude de QR Code):</strong> A validação de entrada usa atualização condicional com trava atômica: <code>UPDATE ingressos SET status = 'UTILIZADO' WHERE codigo = $1 AND status = 'EMITIDO'</code>. Duas leituras simultâneas do mesmo QR code resultam em exatamente uma aprovação e uma recusa imediata.</li>
+    <li><strong>Event Loop Assíncrono do Python:</strong> Cada container opera um event loop em <code>asyncio</code> capaz de atender milhares de conexões concorrentes simultâneas com mínimo footprint de memória RAM.</li>
+</ul>
+
+<div class="page-break"></div>
+
+<h2>3.4 Ponto de Vista de Desenvolvimento (Development Viewpoint)</h2>
+<p>
+Suporta o processo de engenharia de software e organização da base de código:
+</p>
+<ul>
+    <li><strong>Estrutura Modular Uniforme:</strong> Todos os microsserviços seguem o mesmo padrão de pastas (<code>src/config.py</code>, <code>src/db.py</code>, <code>src/auth.py</code>, <code>src/messaging.py</code>, <code>src/outbox.py</code>, <code>src/main.py</code>).</li>
+    <li><strong>Independência de Código de Domínio:</strong> Nenhuma biblioteca de domínio é compartilhada entre os serviços (Zero Shared Kernel). Contratos comuns existem exclusivamente como especificações JSON Schema em <code>contracts/events/</code>, permitindo que cada serviço seja refatorado ou migrado de tecnologia de forma 100% autônoma.</li>
+    <li><strong>Conformidade e Testes Automatizados:</strong>
+        <ul>
+            <li><code>check-contratos.py</code>: Validação cruzada entre código-fonte, esquemas JSON e documentação.</li>
+            <li><code>dominio_test.py</code>: 10 testes unitários isolados cobrindo Composite, State, Strategy e Factory Method.</li>
+            <li><code>test_guia.py</code>: Bateria de testes de integração ponta a ponta cobrindo login, check-in, sague de compras, recusa forçada, parada/recuperação de containers e DLQs.</li>
+        </ul>
+    </li>
+</ul>
+
+<h2>3.5 Ponto de Vista de Implantação (Deployment Viewpoint)</h2>
+<p>
+Mapeia os componentes lógicos para a infraestrutura física de execução:
+</p>
+<ul>
+    <li><strong>Orquestração via Docker Compose:</strong> 8 contêineres conectados através da rede virtual interna tipo bridge <code>arenahub-net</code>.</li>
+    <li><strong>Isolamento de Portas:</strong> Apenas o Frontend (<code>:3000</code>), o Gateway (<code>:8080</code>) e o painel de gerenciamento do RabbitMQ (<code>:15672</code>) expõem portas para o host externo. Os microsserviços de domínio comunicam-se estritamente na rede interna nas portas <code>3001..3004</code>.</li>
+    <li><strong>Persistência de Volumes:</strong> Volumes nomeados persistentes garantem integridade dos dados no PostgreSQL e das filas duráveis no RabbitMQ em reinicializações do Docker.</li>
+</ul>
+
+<h2>3.6 Ponto de Vista Operacional (Operational Viewpoint)</h2>
+<p>
+Define como o sistema é administrado, monitorado e recuperado no dia a dia:
+</p>
+<ul>
+    <li><strong>Monitoramento de Saúde e Disjuntores:</strong> O endpoint <code>GET http://localhost:8080/status</code> expõe o estado de saúde de cada microsserviço e o estado de seu respectivo Circuit Breaker (<code>FECHADO</code> ou <code>ABERTO</code>).</li>
+    <li><strong>Operação de Dead Letter Queues (DLQ):</strong> O administrador visualiza mensagens mortas em <code>GET /api/&lt;servico&gt;/dlq</code> e pode disparar o reprocessamento seguro via <code>POST /api/&lt;servico&gt;/dlq/reprocessar</code>, devolvendo as mensagens diretamente à fila do serviço sem passar pelo exchange.</li>
+    <li><strong>Varredor Autônomo de Expiração:</strong> Um worker em background em <code>ingressos</code> identifica pedidos retidos há mais de 120 segundos (por exemplo, durante uma queda do serviço de pagamento) e dispara o cancelamento automático, liberando as vagas presas.</li>
+</ul>
+
+<h1>4. Perspectivas Arquiteturais (Rozanski & Woods)</h1>
+
+<h2>4.1 Perspectiva de Segurança</h2>
+<p><span class="badge badge-arch">Rozanski & Woods</span></p>
+<p>
+Táticas arquiteturais implementadas:
+</p>
+<ul>
+    <li><strong>Autenticação Centralizada e Stateless:</strong> Emissão de JSON Web Token (JWT) com assinatura HS256 no Gateway. O segredo criptográfico reside unicamente no Gateway.</li>
+    <li><strong>Controle de Acesso Baseado em Papéis (RBAC):</strong> Perfis <code>PARTICIPANTE</code>, <code>ORGANIZADOR</code> e <code>ADM</code> verificados em nível de endpoint. O cadastro público recusa terminantemente a auto-atribuição do perfil ADM.</li>
+    <li><strong>Sanitização e Blindagem de Borda:</strong> O Gateway remove cabeçalhos <code>x-user-*</code> fornecidos pelo cliente externo e injeta a identidade verificada do token antes do proxying reverso.</li>
+    <li><strong>Conformidade PCI-DSS:</strong> Ausência total de persistência de dados sensíveis de pagamento; manipulação exclusiva de tokens mascarados.</li>
+</ul>
+
+<h2>4.2 Perspectiva de Performance e Escalabilidade</h2>
+<p><span class="badge badge-arch">Rozanski & Woods</span></p>
+<p>
+Táticas arquiteturais implementadas:
+</p>
+<ul>
+    <li><strong>Processamento Não-Bloqueante (FastAPI + asyncio):</strong> O uso de corrotinas assíncronas maximiza a taxa de transferência (throughput) sob concorrência intensa.</li>
+    <li><strong>Deferimento em Fila (HTTP 202 Accepted):</strong> A operação de compra não aguarda o término do pagamento síncrono; responde imediatamente 202 com o ID do pedido, absorvendo picos severos de acessos em lançamentos de lotes.</li>
+    <li><strong>Pool de Conexões Assíncrono (asyncpg):</strong> Reutilização eficiente de canais de comunicação com o banco de dados.</li>
+</ul>
+
+<h2>4.3 Perspectiva de Disponibilidade e Resiliência</h2>
+<p><span class="badge badge-arch">Rozanski & Woods</span></p>
+<p>
+Táticas arquiteturais comprovadas em testes práticos:
+</p>
+<ul>
+    <li><strong>Desacoplamento Temporal via RabbitMQ:</strong> Durante a parada programada ou falha do serviço de <code>notificacoes</code>, compras ocorrem normalmente de ponta a ponta; os avisos ficam acumulados na fila durável e são entregues sem perdas assim que o container retorna.</li>
+    <li><strong>Proteção por Circuit Breaker:</strong> A queda do serviço de <code>pagamento</code> não paralisa o catálogo nem os ingressos já emitidos; a interface explica a indisponibilidade pontual e reativa o botão de compra automaticamente quando o serviço se recupera.</li>
+    <li><strong>Transactional Outbox:</strong> Impossibilita o descompasso entre a gravação no banco e a publicação no broker, eliminando mensagens fantasmas ou perdas em eventuais crashes de containers.</li>
+</ul>
+
+<h2>4.4 Perspectiva de Evolução</h2>
+<p><span class="badge badge-arch">Rozanski & Woods</span></p>
+<p>
+Táticas arquiteturais implementadas:
+</p>
+<ul>
+    <li><strong>Versionamento de Contratos de Eventos (<code>*.v1</code>):</strong> Permite evolução granular de esquemas de dados sem incompatibilidade reversa.</li>
+    <li><strong>Poliglotismo e Substituibilidade Tecnológica:</strong> A migração completa do backend de TypeScript/Node.js para Python 3.12 (FastAPI) foi realizada mantendo estrita transparência para o frontend React e para o broker RabbitMQ, comprovando a excelência do isolamento da arquitetura de microsserviços.</li>
+</ul>
+
+<div class="page-break"></div>
+
+<h1>5. Registro dos Testes Experimentais e Tolerância a Falhas</h1>
+<p>
+A tabela a seguir consolida os resultados da suíte formal de verificação automatizada executada contra o ambiente integrado em contêineres:
+</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Cenário de Teste</th>
+            <th>Gatilho / Ação Executada</th>
+            <th>Comportamento Observado no Sistema</th>
+            <th>Resultado</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Autenticação & RBAC</strong></td>
+            <td>Login como ADM e tentativa pública de registrar novo ADM.</td>
+            <td>Login concedido com token válido; tentativa pública recusada com HTTP 400.</td>
+            <td><span class="badge badge-behavioral">APROVADO</span></td>
+        </tr>
+        <tr>
+            <td><strong>Validação de Check-in</strong></td>
+            <td>Leitura de QR Code legítimo (1ª vez e 2ª vez consecutiva).</td>
+            <td>1ª leitura: entrada liberada (HTTP 200, aprovado: true).<br>2ª leitura: recusada (motivo: "já utilizado na entrada").</td>
+            <td><span class="badge badge-behavioral">APROVADO</span></td>
+        </tr>
+        <tr>
+            <td><strong>Saga de Compra Normal</strong></td>
+            <td>Pedido com meio de pagamento PIX e valor integral.</td>
+            <td>Pedido nasceu 202 PENDENTE; Saga concluiu em CONCLUIDO com 1 ingresso emitido.</td>
+            <td><span class="badge badge-behavioral">APROVADO</span></td>
+        </tr>
+        <tr>
+            <td><strong>Saga com Compensação (Cartão Recusado)</strong></td>
+            <td>Compra utilizando meio <code>CARTAO_RECUSADO</code>.</td>
+            <td>Pagamento publica recusa; compensação desfaz a reserva em Eventos; pedido finaliza como RECUSADO.</td>
+            <td><span class="badge badge-behavioral">APROVADO</span></td>
+        </tr>
+        <tr>
+            <td><strong>Saga com Compensação (66 Centavos)</strong></td>
+            <td>Compra com valor terminando em 66 centavos (R$ 80,66).</td>
+            <td>Regra determinística aciona recusa bancária; compensação executada com sucesso.</td>
+            <td><span class="badge badge-behavioral">APROVADO</span></td>
+        </tr>
+        <tr>
+            <td><strong>Tolerância a Falhas: Pagamento Parado</strong></td>
+            <td>Execução de <code>docker compose stop pagamento</code>.</td>
+            <td>Catálogo e Meus Ingressos continuam respondendo 200; disjuntor de pagamento abre isolando falha; após <code>start</code>, recupera para FECHADO.</td>
+            <td><span class="badge badge-behavioral">APROVADO</span></td>
+        </tr>
+        <tr>
+            <td><strong>Tolerância a Falhas: Notificações Parado</strong></td>
+            <td>Execução de <code>docker compose stop notificacoes</code>.</td>
+            <td>Compra conclui 100% normalmente com ingresso emitido; eventos acumulados na fila durável são entregues ao religar.</td>
+            <td><span class="badge badge-behavioral">APROVADO</span></td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="alert alert-success">
+    <strong>Conclusão do Relatório Arquitetural:</strong> A arquitetura de microsserviços do ArenaHub atende de forma exemplar às exigências pedagógicas e técnicas da disciplina de Arquitetura e Padrões de Software (CEFET/RJ 2026.1). A implementação integral em Python 3.12 com FastAPI, estruturada sob os padrões GoF e as perspectivas de qualidade da ISO/IEC 25010 e Rozanski & Woods, entrega resiliência, manutenibilidade e alta eficiência para o domínio de eventos e esportes eletrônicos.
+</div>
+
+</body>
+</html>
