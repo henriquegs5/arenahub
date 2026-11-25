@@ -4,8 +4,10 @@ skinparam backgroundColor #FFFFFF
 skinparam defaultFontName Arial
 skinparam classBackgroundColor #F8FAFC
 skinparam classBorderColor #1E3A8A
+skinparam packageBackgroundColor #FFFFFF
+skinparam packageBorderColor #64748B
 
-title ArenaHub — Diagrama de Classes dos Padrões GoF (Implementação Python 3.12)
+title ArenaHub — Diagrama Geral de Classes dos Padrões GoF (Backend Python 3.12 / FastAPI)
 
 package "Composite (services/eventos/src/estrutura.py)" {
   abstract class ComponenteEvento {
@@ -13,8 +15,9 @@ package "Composite (services/eventos/src/estrutura.py)" {
     +nome: str
     {abstract} +capacidade(): int
     {abstract} +reservados(): int
-    {abstract} +disponiveis(): int
+    +disponiveis(): int
     {abstract} +preco_minimo(): Optional[int]
+    +achar_lote(lote_id: str): Optional[Lote]
   }
 
   class EventoComposto {
@@ -22,23 +25,27 @@ package "Composite (services/eventos/src/estrutura.py)" {
     +adicionar(setor: Setor): EventoComposto
     +capacidade(): int
     +reservados(): int
-    +disponiveis(): int
+    +preco_minimo(): Optional[int]
   }
 
   class Setor {
+    +evento_id: str
     +lotes: List[Lote]
     +adicionar(lote: Lote): Setor
     +capacidade(): int
     +reservados(): int
+    +preco_minimo(): Optional[int]
   }
 
   class Lote {
+    +setor_id: str
     +preco_centavos: int
+    +desconto_percentual: int
     +capacidade_lote: int
     +reservados_lote: int
     +capacidade(): int
     +reservados(): int
-    +disponiveis(): int
+    +vigente(agora: datetime): bool
   }
 
   ComponenteEvento <|-- EventoComposto
@@ -50,9 +57,10 @@ package "Composite (services/eventos/src/estrutura.py)" {
 
 package "State (services/eventos/src/estados.py)" {
   abstract class EstadoEvento {
-    +nome: str
+    +nome: StatusEvento
     +visivel_no_catalogo(): bool
     +aceita_vendas(): bool
+    +aceita_edicao_estrutura(): bool
     +publicar(): EstadoEvento
     +abrir_vendas(): EstadoEvento
     +encerrar_vendas(): EstadoEvento
@@ -74,11 +82,44 @@ package "State (services/eventos/src/estados.py)" {
   EstadoEvento <|-- CanceladoState
 }
 
-package "Strategy & Factory Method (services/pagamento/src/meios.py)" {
+package "Strategy & Factory Method — Preços (services/eventos/src/precos.py)" {
+  abstract class EstrategiaPreco {
+    +nome: PoliticaPreco
+    {abstract} +preco_unitario(base_centavos: int, desconto_percentual: int): int
+  }
+  class PrecoInteira
+  class PrecoMeia
+  class PrecoPromocional
+  class PrecoCortesia
+
+  EstrategiaPreco <|-- PrecoInteira
+  EstrategiaPreco <|-- PrecoMeia
+  EstrategiaPreco <|-- PrecoPromocional
+  EstrategiaPreco <|-- PrecoCortesia
+
+  abstract class CriadorPreco {
+    {abstract} +criar_estrategia(): EstrategiaPreco
+  }
+  class CriadorInteira
+  class CriadorMeia
+  class CriadorPromocional
+  class CriadorCortesia
+
+  CriadorPreco <|-- CriadorInteira
+  CriadorPreco <|-- CriadorMeia
+  CriadorPreco <|-- CriadorPromocional
+  CriadorPreco <|-- CriadorCortesia
+
+  CriadorInteira ..> PrecoInteira : <<creates>>
+  CriadorMeia ..> PrecoMeia : <<creates>>
+}
+
+package "Strategy & Factory Method — Pagamento (services/pagamento/src/meios.py)" {
   abstract class EstrategiaMeioPagamento {
     +codigo: str
     +nome: str
-    {abstract} +cobrar(transacao_id, valor, token): ResultadoCobranca
+    +tipo: str
+    {abstract} +cobrar(transacao_id, valor, dados_autorizacao): ResultadoCobranca
   }
   class MeioPix
   class MeioCartaoCredito
@@ -95,39 +136,98 @@ package "Strategy & Factory Method (services/pagamento/src/meios.py)" {
   }
   class CriadorPix
   class CriadorCartaoCredito
+  class CriadorBoleto
+  class CriadorCartaoRecusado
 
   CriadorMeioPagamento <|-- CriadorPix
   CriadorMeioPagamento <|-- CriadorCartaoCredito
-  CriadorPix ..> MeioPix : <<creates>>
-  CriadorCartaoCredito ..> MeioCartaoCredito : <<creates>>
+  CriadorMeioPagamento <|-- CriadorBoleto
+  CriadorMeioPagamento <|-- CriadorCartaoRecusado
+}
+
+package "Command (services/ingressos/src/comandos.py)" {
+  abstract class ComandoPedido {
+    +pedido_id: str
+    +motivo: Optional[str]
+    {abstract} +executar(conn: asyncpg.Connection): dict
+  }
+  class ComandoReservar
+  class ComandoPagar
+  class ComandoCancelar
+  class ComandoEstornar
+  class ComandoValidarEntrada
+
+  ComandoPedido <|-- ComandoReservar
+  ComandoPedido <|-- ComandoPagar
+  ComandoPedido <|-- ComandoCancelar
+  ComandoPedido <|-- ComandoEstornar
+  ComandoPedido <|-- ComandoValidarEntrada
+}
+
+package "Chain of Responsibility (services/eventos/src/validacoes.py)" {
+  abstract class EloValidacao {
+    +proximo: Optional[EloValidacao]
+    +encadear(proximo: EloValidacao): EloValidacao
+    {abstract} +validar(ctx: ContextoReserva): None
+  }
+  class ValidadorEventoExiste
+  class ValidadorVendasAbertas
+  class ValidadorLoteAtivoEVigente
+  class ValidadorCapacidadeDisponivel
+  class ValidadorLimitePorComprador
+
+  EloValidacao <|-- ValidadorEventoExiste
+  EloValidacao <|-- ValidadorVendasAbertas
+  EloValidacao <|-- ValidadorLoteAtivoEVigente
+  EloValidacao <|-- ValidadorCapacidadeDisponivel
+  EloValidacao <|-- ValidadorLimitePorComprador
+  EloValidacao o--> EloValidacao : proximo
 }
 
 package "Observer (services/notificacoes/src/observer.py)" {
-  interface ObservadorEvento {
-    +notificar(evento: Dict): Coroutine
+  abstract class ObservadorEvento {
+    {abstract} +notificar(topico: str, payload: dict): Coroutine
   }
   class DespachanteEventos {
-    -observadores: Dict[str, List[ObservadorEvento]]
+    -_observadores: Dict[str, List[ObservadorEvento]]
     +inscrever(topico: str, obs: ObservadorEvento)
-    +despachar(topico: str, evento: Dict): Coroutine
+    +despachar(topico: str, payload: dict): Coroutine
   }
   class ObservadorCompra
   class ObservadorEstorno
+  class ObservadorCancelamento
 
   DespachanteEventos o--> ObservadorEvento
-  ObservadorEvento <|.. ObservadorCompra
-  ObservadorEvento <|.. ObservadorEstorno
+  ObservadorEvento <|-- ObservadorCompra
+  ObservadorEvento <|-- ObservadorEstorno
+  ObservadorEvento <|-- ObservadorCancelamento
 }
 
 package "Adapter (services/pagamento/src/provedor.py)" {
-  interface ProvedorPagamentoTarget {
-    +autorizar(pedido_id, valor, dados): ResultadoAutorizacao
+  abstract class ProvedorPagamentoTarget {
+    {abstract} +processar_cobranca(transacao_id, valor, meio, ref): ResultadoCobranca
   }
   class ProvedorSimuladoAdapter {
-    -api_simulada: ApiExternaSimulada
-    +autorizar(pedido_id, valor, dados): ResultadoAutorizacao
+    -_cliente: ApiExternaSimulada
+    +processar_cobranca(transacao_id, valor, meio, ref): ResultadoCobranca
   }
-  ProvedorPagamentoTarget <|.. ProvedorSimuladoAdapter
+  ProvedorPagamentoTarget <|-- ProvedorSimuladoAdapter
+}
+
+package "Circuit Breaker State (gateway/src/breaker.py)" {
+  abstract class EstadoCircuito {
+    +nome: NomeEstado
+    {abstract} +permitir(cb: CircuitBreaker): bool
+    +sucesso(cb: CircuitBreaker): None
+    +falha(cb: CircuitBreaker): None
+  }
+  class Fechado
+  class Aberto
+  class MeioAberto
+
+  EstadoCircuito <|-- Fechado
+  EstadoCircuito <|-- Aberto
+  EstadoCircuito <|-- MeioAberto
 }
 
 @enduml

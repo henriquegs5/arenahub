@@ -6,125 +6,218 @@
 <style>
 @page {
     size: A4;
-    margin: 22mm 18mm 22mm 18mm;
-    @bottom-right {
-        content: counter(page);
+    margin: 24mm 18mm 24mm 18mm;
+    @top-left {
+        content: "CEFET/RJ — ArenaHub (Grupo 5)";
         font-family: 'DejaVu Sans', Arial, sans-serif;
-        font-size: 9pt;
+        font-size: 8pt;
         color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        border-bottom: 0.5pt solid #e2e8f0;
+        padding-bottom: 4px;
+        margin-bottom: 8px;
+    }
+    @top-right {
+        content: "Arquitetura e Padrões de Software (2026.1)";
+        font-family: 'DejaVu Sans', Arial, sans-serif;
+        font-size: 8pt;
+        color: #64748b;
+        border-bottom: 0.5pt solid #e2e8f0;
+        padding-bottom: 4px;
+        margin-bottom: 8px;
+    }
+    @bottom-left {
+        content: "Prof. Dr. Marcelo Rodrigues Arêas";
+        font-family: 'DejaVu Sans', Arial, sans-serif;
+        font-size: 8pt;
+        color: #94a3b8;
+    }
+    @bottom-right {
+        content: "Página " counter(page) " de " counter(pages);
+        font-family: 'DejaVu Sans', Arial, sans-serif;
+        font-size: 8pt;
+        color: #475569;
+        font-weight: 600;
     }
 }
+
+@page:first {
+    margin: 0;
+    @top-left { content: none; }
+    @top-right { content: none; }
+    @bottom-left { content: none; }
+    @bottom-right { content: none; }
+}
+
 body {
-    font-family: 'DejaVu Sans', 'Liberation Sans', 'Segoe UI', Arial, sans-serif;
+    font-family: 'DejaVu Sans', 'Helvetica Neue', Arial, sans-serif;
     color: #1e293b;
     line-height: 1.6;
-    font-size: 10.5pt;
+    font-size: 10pt;
+    text-rendering: optimizeLegibility;
 }
-.cover {
+
+/* ================= CAPA ================= */
+.cover-page {
     page-break-after: always;
+    height: 100vh;
+    padding: 35mm 22mm 25mm 22mm;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
     text-align: center;
-    padding-top: 40px;
 }
-.institution {
-    font-size: 14pt;
-    font-weight: bold;
-    color: #0f172a;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 4px;
+
+.cover-header {
+    border-bottom: 2pt solid #1e3a8a;
+    padding-bottom: 18px;
 }
-.department {
-    font-size: 11pt;
-    color: #475569;
-    margin-bottom: 25px;
-}
-.discipline {
-    font-size: 12pt;
-    font-weight: 600;
-    color: #1e40af;
-    background-color: #eff6ff;
-    display: inline-block;
-    padding: 6px 18px;
-    border-radius: 20px;
-    border: 1px solid #bfdbfe;
-    margin-bottom: 60px;
-}
-.main-title {
-    font-size: 24pt;
+.cover-inst {
+    font-size: 13pt;
     font-weight: 800;
     color: #0f172a;
-    line-height: 1.25;
-    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
 }
-.subtitle {
-    font-size: 14pt;
-    color: #334155;
-    font-weight: 500;
-    margin-bottom: 80px;
-}
-.meta-box {
-    margin-top: 100px;
-    text-align: left;
-    display: inline-block;
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-left: 5px solid #1e40af;
-    padding: 16px 24px;
-    border-radius: 6px;
-    width: 80%;
+.cover-dept {
     font-size: 10pt;
-}
-.meta-box p { margin: 4px 0; }
-.cover-date {
-    margin-top: 80px;
-    font-size: 11pt;
-    color: #64748b;
     font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    margin-bottom: 4px;
 }
-.page-break {
-    page-break-after: always;
+.cover-disc {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #2563eb;
+    margin-top: 6px;
 }
-h1 {
-    font-size: 18pt;
+
+.cover-main {
+    margin: auto 0;
+    padding: 20px 0;
+}
+.cover-title {
+    font-size: 26pt;
+    font-weight: 900;
     color: #0f172a;
-    border-bottom: 2px solid #2563eb;
-    padding-bottom: 6px;
-    margin-top: 30px;
-    margin-bottom: 16px;
+    line-height: 1.2;
+    margin-bottom: 15px;
+    letter-spacing: -0.5px;
 }
-h2 {
-    font-size: 14pt;
+.cover-subtitle {
+    font-size: 13pt;
+    font-weight: 500;
+    color: #334155;
+    line-height: 1.5;
+    max-width: 90%;
+    margin: 0 auto;
+}
+
+.cover-meta {
+    background: #ffffff;
+    border: 1pt solid #cbd5e1;
+    border-left: 5pt solid #2563eb;
+    border-radius: 8px;
+    padding: 16px 22px;
+    text-align: left;
+    margin: 0 auto 20px auto;
+    width: 88%;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+.cover-meta p {
+    margin: 4px 0;
+    font-size: 9.5pt;
+    color: #334155;
+}
+.cover-meta strong {
+    color: #0f172a;
+}
+.members-list {
+    margin: 4px 0 0 16px;
+    padding: 0;
+    list-style-type: square;
+}
+.members-list li {
+    margin: 2px 0;
+    font-weight: 600;
     color: #1e3a8a;
-    border-bottom: 1px solid #cbd5e1;
+}
+
+.cover-footer {
+    font-size: 10pt;
+    font-weight: 600;
+    color: #64748b;
+    border-top: 1pt solid #e2e8f0;
+    padding-top: 12px;
+}
+
+/* ================= CONTEÚDO ================= */
+h1 {
+    font-size: 17pt;
+    font-weight: 800;
+    color: #0f172a;
+    border-bottom: 2pt solid #2563eb;
+    padding-bottom: 6px;
+    margin-top: 26px;
+    margin-bottom: 14px;
+    page-break-after: avoid;
+}
+
+h2 {
+    font-size: 13pt;
+    font-weight: 700;
+    color: #1e3a8a;
+    border-bottom: 1pt solid #cbd5e1;
     padding-bottom: 4px;
-    margin-top: 24px;
-    margin-bottom: 12px;
+    margin-top: 22px;
+    margin-bottom: 10px;
+    page-break-after: avoid;
 }
+
 h3 {
-    font-size: 12pt;
-    color: #1d4ed8;
-    margin-top: 18px;
-    margin-bottom: 8px;
+    font-size: 11pt;
+    font-weight: 700;
+    color: #2563eb;
+    margin-top: 16px;
+    margin-bottom: 6px;
+    page-break-after: avoid;
 }
+
 p {
     margin: 8px 0;
     text-align: justify;
+    line-height: 1.6;
 }
+
 ul, ol {
-    margin: 8px 0 12px 24px;
+    margin: 6px 0 10px 20px;
+    padding: 0;
 }
+
 li {
     margin-bottom: 4px;
 }
+
+.page-break {
+    page-break-after: always;
+}
+
+/* ================= TABELAS ================= */
 table {
     width: 100%;
     border-collapse: collapse;
-    margin: 16px 0;
-    font-size: 9.5pt;
+    margin: 14px 0;
+    font-size: 9pt;
+    page-break-inside: avoid;
 }
 th, td {
-    border: 1px solid #cbd5e1;
-    padding: 8px 10px;
+    border: 1pt solid #cbd5e1;
+    padding: 7px 10px;
     text-align: left;
     vertical-align: top;
 }
@@ -136,46 +229,94 @@ th {
 tr:nth-child(even) {
     background-color: #f8fafc;
 }
+
+/* ================= BADGES ================= */
 .badge {
     display: inline-block;
-    padding: 2px 8px;
-    font-size: 8pt;
-    font-weight: bold;
+    padding: 2px 7px;
+    font-size: 7.5pt;
+    font-weight: 700;
     border-radius: 4px;
     text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
-.badge-creation { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-.badge-structural { background-color: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
-.badge-behavioral { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-.badge-arch { background-color: #fae8ff; color: #86198f; border: 1px solid #f5d0fe; }
+.badge-creation { background-color: #fef3c7; color: #92400e; border: 1pt solid #fde68a; }
+.badge-structural { background-color: #e0e7ff; color: #3730a3; border: 1pt solid #c7d2fe; }
+.badge-behavioral { background-color: #dcfce7; color: #166534; border: 1pt solid #bbf7d0; }
+.badge-arch { background-color: #fae8ff; color: #86198f; border: 1pt solid #f5d0fe; }
 
+/* ================= BOXES DE DESTAQUE ================= */
 .alert {
-    padding: 12px 16px;
+    padding: 10px 14px;
     border-radius: 6px;
-    margin: 14px 0;
+    margin: 12px 0;
     font-size: 9.5pt;
+    page-break-inside: avoid;
 }
 .alert-info {
     background-color: #eff6ff;
-    border-left: 4px solid #3b82f6;
+    border-left: 4pt solid #3b82f6;
     color: #1e3a8a;
 }
 .alert-warning {
     background-color: #fffbeb;
-    border-left: 4px solid #f59e0b;
+    border-left: 4pt solid #f59e0b;
     color: #92400e;
 }
 .alert-success {
     background-color: #f0fdf4;
-    border-left: 4px solid #22c55e;
+    border-left: 4pt solid #22c55e;
     color: #166534;
 }
-.code-box {
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
+
+/* ================= CÓDIGO FONTE (IDE STYLE) ================= */
+.code-window {
+    background: #1e1e2e;
+    border: 1pt solid #313244;
+    border-radius: 8px;
+    margin: 14px 0 16px 0;
+    overflow: hidden;
+    page-break-inside: avoid;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+.code-header {
+    background: #181825;
+    padding: 6px 12px;
+    border-bottom: 1pt solid #313244;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.code-dots {
+    display: inline-block;
+}
+.dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+.dot.red { background: #ff5555; }
+.dot.yellow { background: #f1fa8c; }
+.dot.green { background: #50fa7b; }
+.code-title {
+    font-family: 'DejaVu Sans Mono', Consolas, monospace;
+    font-size: 8.5pt;
+    color: #cdd6f4;
+    font-weight: 600;
+}
+.code-lang {
+    font-size: 7.5pt;
+    font-weight: bold;
+    color: #89b4fa;
+    text-transform: uppercase;
+    background: #313244;
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+.code-body {
     padding: 10px 14px;
-    margin: 12px 0;
     overflow-x: auto;
 }
 pre.highlight {
@@ -183,137 +324,224 @@ pre.highlight {
     font-family: 'DejaVu Sans Mono', 'Consolas', monospace;
     font-size: 8.5pt;
     line-height: 1.45;
-    color: #0f172a;
+    color: #f8f8f2;
+    tab-size: 4;
 }
+
+/* ================= DIAGRAMAS EMBUTIDOS ================= */
+.diagram-figure {
+    text-align: center;
+    margin: 16px auto;
+    page-break-inside: avoid;
+}
+.diagram-container {
+    display: inline-block;
+    background: #ffffff;
+    border: 1pt solid #cbd5e1;
+    border-radius: 6px;
+    padding: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.diagram-container img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+.diagram-caption {
+    font-size: 8.5pt;
+    color: #475569;
+    margin-top: 6px;
+    font-style: italic;
+}
+
+/* Regras de Sintaxe Monokai para Pygments */
 pre { line-height: 125%; }
 td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
 span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
 td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
 span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
-.highlight .hll { background-color: #ffffcc }
-.highlight { background: #f8f8f8; }
-.highlight .c { color: #3D7B7B; font-style: italic } /* Comment */
-.highlight .err { border: 1px solid #FF0000 } /* Error */
-.highlight .k { color: #008000; font-weight: bold } /* Keyword */
-.highlight .o { color: #666666 } /* Operator */
-.highlight .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
-.highlight .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
-.highlight .cp { color: #9C6500 } /* Comment.Preproc */
-.highlight .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
-.highlight .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
-.highlight .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
-.highlight .gd { color: #A00000 } /* Generic.Deleted */
-.highlight .ge { font-style: italic } /* Generic.Emph */
-.highlight .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
-.highlight .gr { color: #E40000 } /* Generic.Error */
-.highlight .gh { color: #000080; font-weight: bold } /* Generic.Heading */
-.highlight .gi { color: #008400 } /* Generic.Inserted */
-.highlight .go { color: #717171 } /* Generic.Output */
-.highlight .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
-.highlight .gs { font-weight: bold } /* Generic.Strong */
-.highlight .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
-.highlight .gt { color: #0044DD } /* Generic.Traceback */
-.highlight .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
-.highlight .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
-.highlight .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
-.highlight .kp { color: #008000 } /* Keyword.Pseudo */
-.highlight .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
-.highlight .kt { color: #B00040 } /* Keyword.Type */
-.highlight .m { color: #666666 } /* Literal.Number */
-.highlight .s { color: #BA2121 } /* Literal.String */
-.highlight .na { color: #687822 } /* Name.Attribute */
-.highlight .nb { color: #008000 } /* Name.Builtin */
-.highlight .nc { color: #0000FF; font-weight: bold } /* Name.Class */
-.highlight .no { color: #880000 } /* Name.Constant */
-.highlight .nd { color: #AA22FF } /* Name.Decorator */
-.highlight .ni { color: #717171; font-weight: bold } /* Name.Entity */
-.highlight .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
-.highlight .nf { color: #0000FF } /* Name.Function */
-.highlight .nl { color: #767600 } /* Name.Label */
-.highlight .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
-.highlight .nt { color: #008000; font-weight: bold } /* Name.Tag */
-.highlight .nv { color: #19177C } /* Name.Variable */
-.highlight .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
-.highlight .w { color: #bbbbbb } /* Text.Whitespace */
-.highlight .mb { color: #666666 } /* Literal.Number.Bin */
-.highlight .mf { color: #666666 } /* Literal.Number.Float */
-.highlight .mh { color: #666666 } /* Literal.Number.Hex */
-.highlight .mi { color: #666666 } /* Literal.Number.Integer */
-.highlight .mo { color: #666666 } /* Literal.Number.Oct */
-.highlight .sa { color: #BA2121 } /* Literal.String.Affix */
-.highlight .sb { color: #BA2121 } /* Literal.String.Backtick */
-.highlight .sc { color: #BA2121 } /* Literal.String.Char */
-.highlight .dl { color: #BA2121 } /* Literal.String.Delimiter */
-.highlight .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
-.highlight .s2 { color: #BA2121 } /* Literal.String.Double */
-.highlight .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
-.highlight .sh { color: #BA2121 } /* Literal.String.Heredoc */
-.highlight .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
-.highlight .sx { color: #008000 } /* Literal.String.Other */
-.highlight .sr { color: #A45A77 } /* Literal.String.Regex */
-.highlight .s1 { color: #BA2121 } /* Literal.String.Single */
-.highlight .ss { color: #19177C } /* Literal.String.Symbol */
-.highlight .bp { color: #008000 } /* Name.Builtin.Pseudo */
-.highlight .fm { color: #0000FF } /* Name.Function.Magic */
-.highlight .vc { color: #19177C } /* Name.Variable.Class */
-.highlight .vg { color: #19177C } /* Name.Variable.Global */
-.highlight .vi { color: #19177C } /* Name.Variable.Instance */
-.highlight .vm { color: #19177C } /* Name.Variable.Magic */
-.highlight .il { color: #666666 } /* Literal.Number.Integer.Long */
+.highlight .hll { background-color: #49483e }
+.highlight { background: #272822; color: #f8f8f2 }
+.highlight .c { color: #959077 } /* Comment */
+.highlight .err { color: #ed007e; background-color: #1e0010 } /* Error */
+.highlight .esc { color: #f8f8f2 } /* Escape */
+.highlight .g { color: #f8f8f2 } /* Generic */
+.highlight .k { color: #66d9ef } /* Keyword */
+.highlight .l { color: #ae81ff } /* Literal */
+.highlight .n { color: #f8f8f2 } /* Name */
+.highlight .o { color: #ff4689 } /* Operator */
+.highlight .x { color: #f8f8f2 } /* Other */
+.highlight .p { color: #f8f8f2 } /* Punctuation */
+.highlight .ch { color: #959077 } /* Comment.Hashbang */
+.highlight .cm { color: #959077 } /* Comment.Multiline */
+.highlight .cp { color: #959077 } /* Comment.Preproc */
+.highlight .cpf { color: #959077 } /* Comment.PreprocFile */
+.highlight .c1 { color: #959077 } /* Comment.Single */
+.highlight .cs { color: #959077 } /* Comment.Special */
+.highlight .gd { color: #ff4689 } /* Generic.Deleted */
+.highlight .ge { color: #f8f8f2; font-style: italic } /* Generic.Emph */
+.highlight .ges { color: #f8f8f2; font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.highlight .gr { color: #f8f8f2 } /* Generic.Error */
+.highlight .gh { color: #f8f8f2 } /* Generic.Heading */
+.highlight .gi { color: #a6e22e } /* Generic.Inserted */
+.highlight .go { color: #66d9ef } /* Generic.Output */
+.highlight .gp { color: #ff4689; font-weight: bold } /* Generic.Prompt */
+.highlight .gs { color: #f8f8f2; font-weight: bold } /* Generic.Strong */
+.highlight .gu { color: #959077 } /* Generic.Subheading */
+.highlight .gt { color: #f8f8f2 } /* Generic.Traceback */
+.highlight .kc { color: #66d9ef } /* Keyword.Constant */
+.highlight .kd { color: #66d9ef } /* Keyword.Declaration */
+.highlight .kn { color: #ff4689 } /* Keyword.Namespace */
+.highlight .kp { color: #66d9ef } /* Keyword.Pseudo */
+.highlight .kr { color: #66d9ef } /* Keyword.Reserved */
+.highlight .kt { color: #66d9ef } /* Keyword.Type */
+.highlight .ld { color: #e6db74 } /* Literal.Date */
+.highlight .m { color: #ae81ff } /* Literal.Number */
+.highlight .s { color: #e6db74 } /* Literal.String */
+.highlight .na { color: #a6e22e } /* Name.Attribute */
+.highlight .nb { color: #f8f8f2 } /* Name.Builtin */
+.highlight .nc { color: #a6e22e } /* Name.Class */
+.highlight .no { color: #66d9ef } /* Name.Constant */
+.highlight .nd { color: #a6e22e } /* Name.Decorator */
+.highlight .ni { color: #f8f8f2 } /* Name.Entity */
+.highlight .ne { color: #a6e22e } /* Name.Exception */
+.highlight .nf { color: #a6e22e } /* Name.Function */
+.highlight .nl { color: #f8f8f2 } /* Name.Label */
+.highlight .nn { color: #f8f8f2 } /* Name.Namespace */
+.highlight .nx { color: #a6e22e } /* Name.Other */
+.highlight .py { color: #f8f8f2 } /* Name.Property */
+.highlight .nt { color: #ff4689 } /* Name.Tag */
+.highlight .nv { color: #f8f8f2 } /* Name.Variable */
+.highlight .ow { color: #ff4689 } /* Operator.Word */
+.highlight .pm { color: #f8f8f2 } /* Punctuation.Marker */
+.highlight .w { color: #f8f8f2 } /* Text.Whitespace */
+.highlight .mb { color: #ae81ff } /* Literal.Number.Bin */
+.highlight .mf { color: #ae81ff } /* Literal.Number.Float */
+.highlight .mh { color: #ae81ff } /* Literal.Number.Hex */
+.highlight .mi { color: #ae81ff } /* Literal.Number.Integer */
+.highlight .mo { color: #ae81ff } /* Literal.Number.Oct */
+.highlight .sa { color: #e6db74 } /* Literal.String.Affix */
+.highlight .sb { color: #e6db74 } /* Literal.String.Backtick */
+.highlight .sc { color: #e6db74 } /* Literal.String.Char */
+.highlight .dl { color: #e6db74 } /* Literal.String.Delimiter */
+.highlight .sd { color: #e6db74 } /* Literal.String.Doc */
+.highlight .s2 { color: #e6db74 } /* Literal.String.Double */
+.highlight .se { color: #ae81ff } /* Literal.String.Escape */
+.highlight .sh { color: #e6db74 } /* Literal.String.Heredoc */
+.highlight .si { color: #e6db74 } /* Literal.String.Interpol */
+.highlight .sx { color: #e6db74 } /* Literal.String.Other */
+.highlight .sr { color: #e6db74 } /* Literal.String.Regex */
+.highlight .s1 { color: #e6db74 } /* Literal.String.Single */
+.highlight .ss { color: #e6db74 } /* Literal.String.Symbol */
+.highlight .bp { color: #f8f8f2 } /* Name.Builtin.Pseudo */
+.highlight .fm { color: #a6e22e } /* Name.Function.Magic */
+.highlight .vc { color: #f8f8f2 } /* Name.Variable.Class */
+.highlight .vg { color: #f8f8f2 } /* Name.Variable.Global */
+.highlight .vi { color: #f8f8f2 } /* Name.Variable.Instance */
+.highlight .vm { color: #f8f8f2 } /* Name.Variable.Magic */
+.highlight .il { color: #ae81ff } /* Literal.Number.Integer.Long */
 </style>
 </head>
 <body>
 
-<div class="cover">
-    <div class="institution">Centro Federal de Educação Tecnológica Celso Suckow da Fonseca — CEFET/RJ</div>
-    <div class="department">Departamento de Informática — Bacharelado em Ciência da Computação</div>
-    <div class="discipline">Disciplina: Arquitetura e Padrões de Software (2026.1)</div>
-    
-    <div class="main-title">ArenaHub — Plataforma de Eventos e Venda de Ingressos</div>
-    <div class="subtitle">Documento 1: Catálogo e Implementação de Padrões de Software<br>(GoF e Arquiteturais) no Backend Python / FastAPI</div>
-    
-    <div class="meta-box">
-        <p><strong>Professor:</strong> Dr. Marcelo Rodrigues Arêas (marcelo.rodrigues@cefet-rj.br)</p>
-        <p><strong>Equipe / Grupo:</strong> Grupo 5 — ArenaHub</p>
-        <p><strong>Tecnologia Backend:</strong> Python 3.12, FastAPI, asyncpg, aio-pika, PostgreSQL 16, RabbitMQ 3.13</p>
-        <p><strong>Repositório:</strong> Plataforma Distribuída de Microsserviços Reativos e Orientados a Eventos</p>
+<div class="cover-page">
+    <div class="cover-header">
+        <div class="cover-inst">Centro Federal de Educação Tecnológica Celso Suckow da Fonseca — CEFET/RJ</div>
+        <div class="cover-dept">Unidade Maracanã — Departamento de Informática (DEMAT/DEPIN)</div>
+        <div class="cover-disc">Disciplina: Arquitetura e Padrões de Software — Período 2026.1</div>
     </div>
     
-    <div class="cover-date">Rio de Janeiro — 2026</div>
+    <div class="cover-main">
+        <div class="cover-title">ArenaHub</div>
+        <div class="cover-subtitle">Plataforma de Gestão de Eventos e Venda de Ingressos em Microsserviços Reativos<br>
+        <strong>Documento 1: Catálogo e Implementação de Padrões de Software (GoF e Arquiteturais) no Backend Python / FastAPI</strong></div>
+    </div>
+    
+    <div class="cover-meta">
+        <p><strong>Professor Avaliador:</strong> Prof. Dr. Marcelo Rodrigues Arêas (marcelo.rodrigues@cefet-rj.br)</p>
+        <p><strong>Equipe de Projeto:</strong> Grupo 5</p>
+        <p><strong>Integrantes do Grupo:</strong></p>
+        <ul class="members-list">
+            <li>Pedro Henrique Maia da Silva</li>
+            <li>Gabriel Coelho</li>
+            <li>André Veiga</li>
+            <li>Henrique Guimarães</li>
+            <li>Victor Furrer</li>
+        </ul>
+        <p style="margin-top: 8px;"><strong>Stack Tecnológica:</strong> Python 3.12, FastAPI, asyncpg, aio-pika, PostgreSQL 16, RabbitMQ 3.13, React (Vite), Docker</p>
+    </div>
+    
+    <div class="cover-footer">
+        Rio de Janeiro — 2026
+    </div>
 </div>
 
 <h1>1. Introdução e Contextualização do Sistema</h1>
 <p>
-O <strong>ArenaHub</strong> é uma plataforma moderna e resiliente de gestão de eventos e venda de ingressos voltada para campeonatos de esportes eletrônicos (e-sports), convenções gamer e meetups. O sistema foi concebido para atender picos de tráfego extremos (abertura de lotes concorridos) mantendo estrita consistência financeira, integridade de lotação dos setores e desacoplamento operacional.
+O <strong>ArenaHub</strong> é uma plataforma moderna e resiliente de gestão de eventos e comercialização de ingressos focada no cenário de esportes eletrônicos (<em>e-sports</em>), convenções gamers e meetups tecnológicos. O sistema foi concebido para suportar cargas massivas e picos intensos de requisições concorrentes (cenário típico de abertura de lotes de grande porte), garantindo integridade financeira estrita, ausência total de <em>overbooking</em> e alta disponibilidade dos serviços essenciais.
 </p>
 <p>
-Atendendo às diretrizes acadêmicas da disciplina ministrada pelo <strong>Prof. Dr. Marcelo Arêas</strong>, o backend foi completamente arquitetado com base em <strong>Microsserviços</strong> e implementado na linguagem <strong>Python 3.12</strong> com o framework <strong>FastAPI</strong>. A escolha do Python assíncrono (I/O não-bloqueante nativo com <code>asyncio</code>, <code>asyncpg</code> e <code>aio-pika</code>) alia expressividade conceitual, segurança de tipos (Type Hints e Pydantic v2) e altíssimo desempenho sob concorrência, dispensando sobrecargas desnecessárias e preservando integralmente os padrões de projeto clássicos do <em>Gang of Four</em> (GoF) e os padrões arquiteturais de sistemas distribuídos recomendados por autores como Martin Fowler, Sam Newman, e Nick Rozanski & Eoin Woods.
+Em estrito alinhamento com as diretrizes pedagógicas e técnicas ministradas pelo <strong>Prof. Dr. Marcelo Rodrigues Arêas</strong>, o backend foi completamente construído sob o estilo arquitetural de <strong>Microsserviços</strong> e implementado em <strong>Python 3.12</strong> com o micro-framework assíncrono <strong>FastAPI</strong>.
 </p>
 
 <div class="alert alert-info">
-    <strong>Princípio de Conformidade do Grupo 5:</strong> Todo padrão de projeto catalogado neste relatório possui correspondência direta, testada e em operação no código-fonte Python dos microsserviços. Os comportamentos foram validados por testes unitários e de integração contínua (end-to-end), comprovando que a mudança para Python mantém 100% dos contratos REST, schemas de eventos JSON e tolerância a falhas.
+    <strong>Justificativa Arquitetural da Adoção de Python / FastAPI:</strong>
+    A adoção do Python 3.12 com suporte nativo a corrotinas (<code>asyncio</code>), drivers assíncronos de alta performance (<code>asyncpg</code> para PostgreSQL e <code>aio-pika</code> para RabbitMQ) e validação declarativa de contratos via <code>Pydantic v2</code> possibilitou conciliar código altamente expressivo com velocidade de execução próxima a linguagens compiladas. Essa abordagem mantém 100% dos contratos de eventos, semântica dos padrões de projeto GoF e isolamento de dados sem nenhuma perda de robustez.
 </div>
+
+<p>
+A Figura abaixo apresenta o Diagrama Geral de Classes dos Padrões GoF implementados no ecossistema:
+</p>
+
+
+    <div class="diagram-figure">
+        <div class="diagram-container">
+            <img src="file:///home/pedro/Faculdade/APS/arenahub/docs/entrega/diagramas/padroes-gof.png" style="max-height: 500px; max-width: 100%;" alt="Diagrama Geral de Classes dos Padrões GoF Implementados no Backend Python 3.12">
+        </div>
+        <div class="diagram-caption"><strong>Figura:</strong> Diagrama Geral de Classes dos Padrões GoF Implementados no Backend Python 3.12</div>
+    </div>
+    
+
+<div class="page-break"></div>
 
 <h1>2. Padrões de Criação (GoF Creational)</h1>
 
 <h2>2.1 Factory Method</h2>
 <p><span class="badge badge-creation">GoF Criação</span></p>
 <p>
-<strong>Intenção:</strong> Definir uma interface para criar um objeto, mas deixar as subclasses ou funções especializadas decidirem qual classe instanciar, desacoplando o cliente das classes concretas.
+<strong>Intenção:</strong> Definir uma interface para criar um objeto, mas permitir às subclasses ou criadores especializados decidirem qual classe instanciar, eliminando o acoplamento direto entre as camadas consumidoras e as classes concretas.
 </p>
 <p>
 <strong>Aplicação no ArenaHub:</strong>
-No microsserviço de <code>eventos</code> (cálculo de preço de ingressos) e no microsserviço de <code>pagamento</code> (processamento por múltiplos meios), o padrão Factory Method é empregado para encapsular a criação das instâncias de estratégias.
+No microsserviço de <code>eventos</code> e no microsserviço de <code>pagamento</code>, o padrão Factory Method é utilizado para instanciar dinamicamente as estratégias corretas de cálculo de preço e de processamento bancário:
 </p>
 <ul>
-    <li><strong>Em <code>services/eventos/src/precos.py</code>:</strong> A classe abstrata <code>CriadorPreco</code> declara o método fábrica <code>criar_estrategia()</code>. Classes concretas (<code>CriadorInteira</code>, <code>CriadorMeia</code>, <code>CriadorPromocional</code>, <code>CriadorCortesia</code>) produzem a respectiva <code>EstrategiaPreco</code>.</li>
-    <li><strong>Em <code>services/pagamento/src/meios.py</code>:</strong> A classe abstrata <code>CriadorMeioPagamento</code> declara <code>criar()</code>, implementado por <code>CriadorPix</code>, <code>CriadorCartaoCredito</code>, <code>CriadorBoleto</code> e <code>CriadorCartaoRecusado</code>.</li>
+    <li>Em <code>services/eventos/src/precos.py</code>: O criador abstrato <code>CriadorPreco</code> expõe o método fábrica <code>criar_estrategia()</code>, implementado por <code>CriadorInteira</code>, <code>CriadorMeia</code>, <code>CriadorPromocional</code> e <code>CriadorCortesia</code>.</li>
+    <li>Em <code>services/pagamento/src/meios.py</code>: O criador abstrato <code>CriadorMeioPagamento</code> declara <code>criar()</code>, implementado por <code>CriadorPix</code>, <code>CriadorCartaoCredito</code>, <code>CriadorBoleto</code> e <code>CriadorCartaoRecusado</code>.</li>
 </ul>
 
-<div class="code-box"><pre class="highlight"><span class="c1"># services/eventos/src/precos.py</span>
-<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+    <div class="code-window">
+        
+        <div class="code-header">
+            <div class="code-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <div class="code-title">services/eventos/src/precos.py</div>
+            <div class="code-lang">Python 3.12</div>
+        </div>
+        
+        <div class="code-body">
+            <pre class="highlight"><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
+
+<span class="n">PoliticaPreco</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;INTEIRA&quot;</span><span class="p">,</span> <span class="s2">&quot;MEIA&quot;</span><span class="p">,</span> <span class="s2">&quot;PROMOCIONAL&quot;</span><span class="p">,</span> <span class="s2">&quot;CORTESIA&quot;</span><span class="p">]</span>
 
 <span class="k">class</span> <span class="nc">CriadorPreco</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Criador Abstrato do Factory Method para estrategias de preco.&quot;&quot;&quot;</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">criar_estrategia</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EstrategiaPreco</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
@@ -325,6 +553,14 @@ No microsserviço de <code>eventos</code> (cálculo de preço de ingressos) e no
 <span class="k">class</span> <span class="nc">CriadorMeia</span><span class="p">(</span><span class="n">CriadorPreco</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">criar_estrategia</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EstrategiaPreco</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">PrecoMeia</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">CriadorPromocional</span><span class="p">(</span><span class="n">CriadorPreco</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">criar_estrategia</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EstrategiaPreco</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">PrecoPromocional</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">CriadorCortesia</span><span class="p">(</span><span class="n">CriadorPreco</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">criar_estrategia</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EstrategiaPreco</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">PrecoCortesia</span><span class="p">()</span>
 
 <span class="n">CRIADORES</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">PoliticaPreco</span><span class="p">,</span> <span class="n">CriadorPreco</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;INTEIRA&quot;</span><span class="p">:</span> <span class="n">CriadorInteira</span><span class="p">(),</span>
@@ -338,25 +574,43 @@ No microsserviço de <code>eventos</code> (cálculo de preço de ingressos) e no
     <span class="k">if</span> <span class="ow">not</span> <span class="n">criador</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Politica de preco desconhecida: </span><span class="si">{</span><span class="n">politica</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">criador</span>
-</pre></div>
+</pre>
+        </div>
+    </div>
+    
 
 <h2>2.2 Singleton</h2>
 <p><span class="badge badge-creation">GoF Criação</span></p>
 <p>
-<strong>Intenção:</strong> Garantir que uma classe tenha apenas uma instância e fornecer um ponto global de acesso a ela.
+<strong>Intenção:</strong> Garantir que uma classe possua apenas uma única instância em todo o ciclo de vida da aplicação e prover um ponto de acesso global e seguro a ela.
 </p>
 <p>
 <strong>Aplicação no ArenaHub:</strong>
-Em aplicações assíncronas de alta performance (FastAPI + asyncpg), criar uma nova conexão com o PostgreSQL a cada requisição HTTP destrói a escalabilidade do banco de dados. Em <code>db.py</code> presente em cada microsserviço e no API Gateway, o pool de conexões (<code>asyncpg.Pool</code>) é gerenciado como uma instância única compartilhada (Singleton de ciclo de vida da aplicação). As funções <code>obter_pool()</code> e <code>fechar_db()</code> garantem que todas as corrotinas reutilizem o mesmo pool com controle de concorrência atômico.
+Em serviços assíncronos baseados em event loop, criar conexões dedicadas ao banco de dados para cada requisição HTTP acarreta esgotamento precoce de portas e degradação drástica de performance. Em <code>db.py</code> (presente em cada microsserviço e no API Gateway), o pool de conexões (<code>asyncpg.Pool</code>) é gerenciado como um Singleton de ciclo de vida.
 </p>
 
-<div class="code-box"><pre class="highlight"><span class="c1"># services/ingressos/src/db.py</span>
-<span class="kn">import</span> <span class="nn">asyncpg</span>
+
+    <div class="code-window">
+        
+        <div class="code-header">
+            <div class="code-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <div class="code-title">services/ingressos/src/db.py</div>
+            <div class="code-lang">Python 3.12</div>
+        </div>
+        
+        <div class="code-body">
+            <pre class="highlight"><span class="kn">import</span> <span class="nn">asyncpg</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">DATABASE_URL</span>
 
 <span class="n">_pool</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">asyncpg</span><span class="o">.</span><span class="n">Pool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">obter_pool</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">asyncpg</span><span class="o">.</span><span class="n">Pool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retorna a instancia unica (Singleton) do pool assincrono de conexoes.&quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">_pool</span>
     <span class="k">if</span> <span class="n">_pool</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">_pool</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncpg</span><span class="o">.</span><span class="n">create_pool</span><span class="p">(</span>
@@ -366,7 +620,17 @@ Em aplicações assíncronas de alta performance (FastAPI + asyncpg), criar uma 
             <span class="n">command_timeout</span><span class="o">=</span><span class="mi">60</span>
         <span class="p">)</span>
     <span class="k">return</span> <span class="n">_pool</span>
-</pre></div>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">fechar_db</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Encerra graciosamente o pool de conexoes durante o shutdown da aplicacao.&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_pool</span>
+    <span class="k">if</span> <span class="n">_pool</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">_pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">_pool</span> <span class="o">=</span> <span class="kc">None</span>
+</pre>
+        </div>
+    </div>
+    
 
 <div class="page-break"></div>
 
@@ -375,22 +639,37 @@ Em aplicações assíncronas de alta performance (FastAPI + asyncpg), criar uma 
 <h2>3.1 Composite</h2>
 <p><span class="badge badge-structural">GoF Estrutural</span></p>
 <p>
-<strong>Intenção:</strong> Compor objetos em estruturas de árvore para representar hierarquias parte-todo. O Composite permite que os clientes tratem objetos individuais e composições de objetos de maneira uniforme.
+<strong>Intenção:</strong> Compor objetos em estruturas de árvore para representar hierarquias do tipo "parte-todo". O Composite permite aos clientes tratarem tanto objetos individuais quanto composições de objetos de forma uniforme.
 </p>
 <p>
 <strong>Aplicação no ArenaHub:</strong>
-Implementado em <code>services/eventos/src/estrutura.py</code>. Um evento de arena esportiva é estruturado hierarquicamente:
+Localizado em <code>services/eventos/src/estrutura.py</code>. A organização física e comercial de um evento esportivo possui estrutura hierárquica clara:
 </p>
 <ul>
-    <li><strong>Componente Raiz (Composite):</strong> <code>EventoComposto</code> (agrega um ou mais Setores).</li>
-    <li><strong>Nó Intermediário (Composite):</strong> <code>Setor</code> (ex.: Pista VIP, Camarote, Arquibancada; agrega Lotes).</li>
-    <li><strong>Folha (Leaf):</strong> <code>Lote</code> (unidade atômica com preço, cota de ingressos, ingressos reservados e janela de vigência).</li>
+    <li><strong>Component (Componente Abstrato):</strong> <code>ComponenteEvento</code> declara a interface comum: <code>capacidade()</code>, <code>reservados()</code>, <code>disponiveis()</code>, <code>preco_minimo()</code> e <code>achar_lote()</code>.</li>
+    <li><strong>Composite (Composição Raiz):</strong> <code>EventoComposto</code> agrega uma coleção de setores esportivos.</li>
+    <li><strong>Composite (Composição Intermediária):</strong> <code>Setor</code> (ex.: Pista VIP, Camarote, Arquibancada) agrega lotes de venda.</li>
+    <li><strong>Leaf (Folha Atômica):</strong> <code>Lote</code> encapsula a cota física de ingressos, reservas ativas, preço base, política de desconto e janela temporal de vigência.</li>
 </ul>
-<p>
-A classe abstrata <code>ComponenteEvento</code> declara operações como <code>capacidade()</code>, <code>reservados()</code>, <code>disponiveis()</code> e <code>preco_minimo()</code>. O cliente pode consultar a capacidade total ou a disponibilidade restante do evento chamando um único método, e a estrutura de árvore calcula o resultado recursivamente.
-</p>
 
-<div class="code-box"><pre class="highlight"><span class="c1"># services/eventos/src/estrutura.py</span>
+
+    <div class="code-window">
+        
+        <div class="code-header">
+            <div class="code-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <div class="code-title">services/eventos/src/estrutura.py</div>
+            <div class="code-lang">Python 3.12</div>
+        </div>
+        
+        <div class="code-body">
+            <pre class="highlight"><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
 <span class="k">class</span> <span class="nc">ComponenteEvento</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">nome</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="nb">id</span>
@@ -404,6 +683,9 @@ A classe abstrata <code>ComponenteEvento</code> declara operações como <code>c
 
     <span class="k">def</span> <span class="nf">disponiveis</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">capacidade</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">reservados</span><span class="p">())</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">preco_minimo</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span> <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
 <span class="k">class</span> <span class="nc">EventoComposto</span><span class="p">(</span><span class="n">ComponenteEvento</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">nome</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
@@ -423,57 +705,113 @@ A classe abstrata <code>ComponenteEvento</code> declara operações como <code>c
     <span class="k">def</span> <span class="nf">preco_minimo</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
         <span class="n">precos</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">setores</span> <span class="k">if</span> <span class="p">(</span><span class="n">p</span> <span class="o">:=</span> <span class="n">s</span><span class="o">.</span><span class="n">preco_minimo</span><span class="p">())</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
         <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">precos</span><span class="p">)</span> <span class="k">if</span> <span class="n">precos</span> <span class="k">else</span> <span class="kc">None</span>
-</pre></div>
+</pre>
+        </div>
+    </div>
+    
 
 <h2>3.2 Adapter</h2>
 <p><span class="badge badge-structural">GoF Estrutural</span></p>
 <p>
-<strong>Intenção:</strong> Converter a interface de uma classe em outra interface esperada pelos clientes. O Adapter permite que classes trabalhem juntas quando isso seria impossível por incompatibilidade de interfaces.
+<strong>Intenção:</strong> Converter a interface de uma classe na interface que os clientes esperam. O Adapter possibilita que classes com interfaces incompatíveis trabalhem em conjunto.
 </p>
 <p>
 <strong>Aplicação no ArenaHub:</strong>
 </p>
 <ul>
-    <li><strong>Provedor de Pagamento (<code>services/pagamento/src/provedor.py</code>):</strong> O domínio do ArenaHub exige o protocolo <code>ProvedorPagamentoTarget</code>. Como gateway bancário de cartão e PIX é um sistema simulado externo (com formato de resposta proprietário e códigos de status arbitrários), a classe <code>ProvedorSimuladoAdapter</code> adapta a chamada externa ao modelo de dados interno de transação segura.</li>
-    <li><strong>Canais de Notificação (<code>services/notificacoes/src/canais.py</code>):</strong> O despachante de notificações interage com a interface <code>CanalNotificacaoTarget</code>. O <code>CanalEmailAdapter</code> encapsula o envio de e-mails, formatando templates HTML e adaptando para o logger sem acoplar o serviço de avisos a um SDK de SMTP proprietário.</li>
+    <li><strong>Provedor de Pagamento (<code>services/pagamento/src/provedor.py</code>):</strong> O núcleo do domínio depende do contrato <code>ProvedorPagamentoTarget</code>. Como a comunicação com instituições financeiras e adquirentes simula APIs proprietárias com formatos heterogêneos de carga útil, o <code>ProvedorSimuladoAdapter</code> traduz a chamada externa para o modelo interno seguro de transação.</li>
+    <li><strong>Canais de Mensageria (<code>services/notificacoes/src/canais.py</code>):</strong> O <code>CanalEmailAdapter</code> isola a lógica de entrega de notificações de fornecedores de e-mail transacional (ex.: SES, SendGrid, SMTP).</li>
 </ul>
 
-<div class="code-box"><pre class="highlight"><span class="c1"># services/pagamento/src/provedor.py</span>
-<span class="k">class</span> <span class="nc">ProvedorPagamentoTarget</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+
+    <div class="code-window">
+        
+        <div class="code-header">
+            <div class="code-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <div class="code-title">services/pagamento/src/provedor.py</div>
+            <div class="code-lang">Python 3.12</div>
+        </div>
+        
+        <div class="code-body">
+            <pre class="highlight"><span class="k">class</span> <span class="nc">ProvedorPagamentoTarget</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Target: Interface estrita esperada pelas regras de negocio de cobranca.&quot;&quot;&quot;</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">processar_cobranca</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transacao_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">valor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">meio</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ref</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultadoCobranca</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
 <span class="k">class</span> <span class="nc">ProvedorSimuladoAdapter</span><span class="p">(</span><span class="n">ProvedorPagamentoTarget</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Adapta as respostas da API externa simulada para o contrato de domínio.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Adapter: Converte os formatos da API externa bancaria para o dominio.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api_cliente</span><span class="p">:</span> <span class="n">ApiExternaSimulada</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cliente</span> <span class="o">=</span> <span class="n">api_cliente</span>
 
     <span class="k">async</span> <span class="k">def</span> <span class="nf">processar_cobranca</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transacao_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">valor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">meio</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ref</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultadoCobranca</span><span class="p">:</span>
-        <span class="n">resposta_externa</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cliente</span><span class="o">.</span><span class="n">enviar_requisicao_bancaria</span><span class="p">(</span><span class="n">transacao_id</span><span class="p">,</span> <span class="n">valor</span><span class="p">,</span> <span class="n">meio</span><span class="p">,</span> <span class="n">ref</span><span class="p">)</span>
+        <span class="n">raw_resp</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cliente</span><span class="o">.</span><span class="n">enviar_requisicao_bancaria</span><span class="p">(</span><span class="n">transacao_id</span><span class="p">,</span> <span class="n">valor</span><span class="p">,</span> <span class="n">meio</span><span class="p">,</span> <span class="n">ref</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ResultadoCobranca</span><span class="p">(</span>
-            <span class="n">aprovado</span><span class="o">=</span><span class="p">(</span><span class="n">resposta_externa</span><span class="o">.</span><span class="n">raw_status</span> <span class="o">==</span> <span class="mi">200</span><span class="p">),</span>
-            <span class="n">motivo</span><span class="o">=</span><span class="n">resposta_externa</span><span class="o">.</span><span class="n">error_description</span> <span class="k">if</span> <span class="n">resposta_externa</span><span class="o">.</span><span class="n">raw_status</span> <span class="o">!=</span> <span class="mi">200</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">tid_operadora</span><span class="o">=</span><span class="n">resposta_externa</span><span class="o">.</span><span class="n">nsu_banco</span>
+            <span class="n">aprovado</span><span class="o">=</span><span class="p">(</span><span class="n">raw_resp</span><span class="o">.</span><span class="n">codigo_retorno</span> <span class="o">==</span> <span class="s2">&quot;00&quot;</span><span class="p">),</span>
+            <span class="n">motivo</span><span class="o">=</span><span class="n">raw_resp</span><span class="o">.</span><span class="n">mensagem_erro</span> <span class="k">if</span> <span class="n">raw_resp</span><span class="o">.</span><span class="n">codigo_retorno</span> <span class="o">!=</span> <span class="s2">&quot;00&quot;</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">tid_operadora</span><span class="o">=</span><span class="n">raw_resp</span><span class="o">.</span><span class="n">nsu_banco</span>
         <span class="p">)</span>
-</pre></div>
+</pre>
+        </div>
+    </div>
+    
 
-<h2>3.3 Facade e Proxy</h2>
+<h2>3.3 Facade e Protection Proxy</h2>
 <p><span class="badge badge-structural">GoF Estrutural</span></p>
 <p>
-<strong>Intenção do Facade:</strong> Fornecer uma interface unificada para um conjunto de interfaces em um subsistema. Define uma interface de nível mais alto que torna o subsistema mais fácil de usar.
-</p>
-<p>
-<strong>Intenção do Proxy:</strong> Fornecer um substituto ou marcador de posição para outro objeto para controlar o acesso a ele (Protection Proxy / Smart Proxy).
+<strong>Intenção do Facade:</strong> Prover uma interface unificada e simplificada para um subsistema complexo.<br>
+<strong>Intenção do Proxy:</strong> Controlar e blindar o acesso a um objeto ou serviço remoto (Protection Proxy).
 </p>
 <p>
 <strong>Aplicação no ArenaHub:</strong>
-Implementados de forma sinérgica no <strong>API Gateway</strong> (<code>gateway/src/main.py</code>):
+Implementados no <strong>API Gateway</strong> (<code>gateway/src/main.py</code>). O Gateway atua simultaneamente como:
 </p>
 <ul>
-    <li><strong>Como Facade:</strong> O cliente web (React) enxerga um único host HTTP (<code>http://localhost:8080/api/*</code>). O Gateway oculta a complexidade interna da malha de 4 microsserviços, roteando chamadas para <code>eventos:3001</code>, <code>ingressos:3002</code>, <code>pagamento:3003</code> e <code>notificacoes:3004</code> de forma unificada.</li>
-    <li><strong>Como Protection Proxy:</strong> Toda requisição passa por um filtro rígido de segurança. O Proxy descriptografa e valida a assinatura criptográfica do token JWT, descarta qualquer cabeçalho <code>x-user-*</code> enviado maliciosamente pelo cliente externo, e injeta com autoridade os headers internos <code>x-user-id</code> e <code>x-user-role</code> antes de repassar a requisição. Se o token for inválido, o proxy bloqueia a chamada imediatamente com <code>HTTP 401 Unauthorized</code>.</li>
+    <li><strong>Facade:</strong> Disponibiliza um único endereço base (<code>http://localhost:8080/api/*</code>) para o frontend React, unificando os 4 microsserviços e abstraindo endereços de rede, portas internas e particionamento de microsserviços.</li>
+    <li><strong>Protection Proxy:</strong> Intercepta todas as requisições HTTP, valida a assinatura criptográfica do JSON Web Token (JWT), expurga sumariamente cabeçalhos adulteráveis (<code>x-user-*</code>) e injeta a identidade verificada do usuário (<code>x-user-id</code>, <code>x-user-role</code>) antes de despachar a chamada aos microsserviços.</li>
 </ul>
+
+
+    <div class="code-window">
+        
+        <div class="code-header">
+            <div class="code-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <div class="code-title">gateway/src/main.py</div>
+            <div class="code-lang">Python 3.12</div>
+        </div>
+        
+        <div class="code-body">
+            <pre class="highlight"><span class="c1"># gateway/src/main.py</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">api_route</span><span class="p">(</span><span class="s2">&quot;/api/</span><span class="si">{servico}</span><span class="s2">/{path:path}&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="s2">&quot;PUT&quot;</span><span class="p">,</span> <span class="s2">&quot;PATCH&quot;</span><span class="p">,</span> <span class="s2">&quot;DELETE&quot;</span><span class="p">])</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">proxy_catch_all</span><span class="p">(</span><span class="n">servico</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Facade + Protection Proxy: Autentica, higieniza e roteia de forma unificada.&quot;&quot;&quot;</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="p">)</span>
+    <span class="c1"># Expurga headers maliciosos injetados pelo cliente</span>
+    <span class="n">headers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;x-user-id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">headers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;x-user-role&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="c1"># Protection Proxy: Valida token JWT</span>
+    <span class="n">auth_header</span> <span class="o">=</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;authorization&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">auth_header</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Bearer &quot;</span><span class="p">):</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="n">validar_jwt</span><span class="p">(</span><span class="n">auth_header</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">payload</span><span class="p">:</span>
+            <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;x-user-id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;sub&quot;</span><span class="p">]</span>
+            <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;x-user-role&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s2">&quot;papel&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Facade: Encaminha para a porta interna do microsservico</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">encaminhar_requisicao</span><span class="p">(</span><span class="n">servico</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
+</pre>
+        </div>
+    </div>
+    
 
 <div class="page-break"></div>
 
@@ -486,64 +824,76 @@ Implementados de forma sinérgica no <strong>API Gateway</strong> (<code>gateway
 </p>
 <p>
 <strong>Aplicação no ArenaHub:</strong>
-O padrão State é utilizado para modelar os ciclos de vida mais críticos do sistema, evitando estruturas procedurais monolíticas cheias de <code>if/elif/else</code>:
+Três máquinas de estados completas regem a consistência do sistema:
 </p>
 <ol>
-    <li><strong>Ciclo do Evento (<code>services/eventos/src/estados.py</code>):</strong> Estados <code>RascunhoState</code>, <code>PublicadoState</code>, <code>VendasAbertasState</code>, <code>VendasEncerradasState</code>, <code>RealizadoState</code> e <code>CanceladoState</code>. Cada estado implementa métodos como <code>abrir_vendas()</code>, <code>encerrar_vendas()</code>, <code>publicar()</code> e <code>cancelar()</code>. Transições inválidas disparam a exceção tipada <code>TransicaoInvalida</code>.</li>
-    <li><strong>Ciclo do Pedido e Ingresso (<code>services/ingressos/src/estados.py</code>):</strong> Controla as fases <code>PENDENTE</code> -> <code>RESERVADO</code> -> <code>AGUARDANDO_PAGAMENTO</code> -> <code>PAGO</code> -> <code>CONCLUIDO</code>, bem como o estado final do ingresso (<code>EMITIDO</code> -> <code>UTILIZADO</code>).</li>
-    <li><strong>Circuit Breaker do Gateway (<code>gateway/src/breaker.py</code>):</strong> Disjuntor em três estados clássicos: <code>FECHADO</code>, <code>ABERTO</code> e <code>MEIO_ABERTO</code>.</li>
+    <li><strong>Ciclo de Vida do Evento (<code>services/eventos/src/estados.py</code>):</strong> Estados <code>RascunhoState</code>, <code>PublicadoState</code>, <code>VendasAbertasState</code>, <code>VendasEncerradasState</code>, <code>RealizadoState</code> e <code>CanceladoState</code>. Transições proibidas disparam a exceção <code>TransicaoInvalida</code>.</li>
+    <li><strong>Ciclo do Pedido e Ingresso (<code>services/ingressos/src/estados.py</code>):</strong>
+        <ul>
+            <li>Pedido: <code>PENDENTE</code> &rarr; <code>RESERVADO</code> &rarr; <code>AGUARDANDO_PAGAMENTO</code> &rarr; <code>PAGO</code> &rarr; <code>CONCLUIDO</code> (ou <code>RECUSADO</code> / <code>EXPIRADO</code> / <code>CANCELADO</code>).</li>
+            <li>Ingresso: <code>EMITIDO</code> &rarr; <code>UTILIZADO</code> (ou <code>CANCELADO</code> / <code>INVALIDADO</code>).</li>
+        </ul>
+    </li>
+    <li><strong>Circuit Breaker do Gateway (<code>gateway/src/breaker.py</code>):</strong> Estados <code>Fechado</code>, <code>Aberto</code> e <code>MeioAberto</code>.</li>
 </ol>
 
-<div class="code-box"><pre class="highlight"><span class="c1"># services/eventos/src/estados.py</span>
-<span class="k">class</span> <span class="nc">EstadoEvento</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nome</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nome</span> <span class="o">=</span> <span class="n">nome</span>
 
-    <span class="k">def</span> <span class="nf">visivel_no_catalogo</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>
-    <span class="k">def</span> <span class="nf">aceita_vendas</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span> <span class="k">return</span> <span class="kc">False</span>
+    <div class="diagram-figure">
+        <div class="diagram-container">
+            <img src="file:///home/pedro/Faculdade/APS/arenahub/docs/entrega/diagramas/estados-evento.png" style="max-height: 320px; max-width: 100%;" alt="Máquina de Estados do Evento (services/eventos/src/estados.py)">
+        </div>
+        <div class="diagram-caption"><strong>Figura:</strong> Máquina de Estados do Evento (services/eventos/src/estados.py)</div>
+    </div>
+    
 
-    <span class="k">def</span> <span class="nf">publicar</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;EstadoEvento&quot;</span><span class="p">:</span> <span class="k">raise</span> <span class="n">TransicaoInvalida</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nome</span><span class="p">,</span> <span class="s2">&quot;PUBLICADO&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">abrir_vendas</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;EstadoEvento&quot;</span><span class="p">:</span> <span class="k">raise</span> <span class="n">TransicaoInvalida</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nome</span><span class="p">,</span> <span class="s2">&quot;VENDAS_ABERTAS&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">cancelar</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;EstadoEvento&quot;</span><span class="p">:</span> <span class="k">return</span> <span class="n">CanceladoState</span><span class="p">()</span>
 
-<span class="k">class</span> <span class="nc">RascunhoState</span><span class="p">(</span><span class="n">EstadoEvento</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;RASCUNHO&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">publicar</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EstadoEvento</span><span class="p">:</span> <span class="k">return</span> <span class="n">PublicadoState</span><span class="p">()</span>
+    <div class="diagram-figure">
+        <div class="diagram-container">
+            <img src="file:///home/pedro/Faculdade/APS/arenahub/docs/entrega/diagramas/estados-pedido.png" style="max-height: 350px; max-width: 100%;" alt="Máquina de Estados do Pedido e do Ingresso Digital (services/ingressos/src/estados.py)">
+        </div>
+        <div class="diagram-caption"><strong>Figura:</strong> Máquina de Estados do Pedido e do Ingresso Digital (services/ingressos/src/estados.py)</div>
+    </div>
+    
 
-<span class="k">class</span> <span class="nc">PublicadoState</span><span class="p">(</span><span class="n">EstadoEvento</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;PUBLICADO&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">visivel_no_catalogo</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span> <span class="k">return</span> <span class="kc">True</span>
-    <span class="k">def</span> <span class="nf">abrir_vendas</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EstadoEvento</span><span class="p">:</span> <span class="k">return</span> <span class="n">VendasAbertasState</span><span class="p">()</span>
 
-<span class="k">class</span> <span class="nc">VendasAbertasState</span><span class="p">(</span><span class="n">EstadoEvento</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;VENDAS_ABERTAS&quot;</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">visivel_no_catalogo</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span> <span class="k">return</span> <span class="kc">True</span>
-    <span class="k">def</span> <span class="nf">aceita_vendas</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span> <span class="k">return</span> <span class="kc">True</span>
-    <span class="k">def</span> <span class="nf">encerrar_vendas</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EstadoEvento</span><span class="p">:</span> <span class="k">return</span> <span class="n">VendasEncerradasState</span><span class="p">()</span>
-</pre></div>
+    <div class="diagram-figure">
+        <div class="diagram-container">
+            <img src="file:///home/pedro/Faculdade/APS/arenahub/docs/entrega/diagramas/estados-disjuntor.png" style="max-height: 220px; max-width: 100%;" alt="Máquina de Estados do Circuit Breaker no API Gateway (gateway/src/breaker.py)">
+        </div>
+        <div class="diagram-caption"><strong>Figura:</strong> Máquina de Estados do Circuit Breaker no API Gateway (gateway/src/breaker.py)</div>
+    </div>
+    
+
+<div class="page-break"></div>
 
 <h2>4.2 Strategy</h2>
 <p><span class="badge badge-behavioral">GoF Comportamental</span></p>
 <p>
-<strong>Intenção:</strong> Definir uma família de algoritmos, encapsular cada um deles e torná-los intercambiáveis. O Strategy permite que o algoritmo varie independentemente dos clientes que o utilizam.
+<strong>Intenção:</strong> Definir uma família de algoritmos, encapsular cada um deles e torná-los intercambiáveis, permitindo que o algoritmo varie independentemente dos clientes que o utilizam.
 </p>
 <p>
 <strong>Aplicação no ArenaHub:</strong>
 </p>
 <ul>
-    <li><strong>Políticas de Preço de Ingressos (<code>services/eventos/src/precos.py</code>):</strong> A classe base <code>EstrategiaPreco</code> define <code>preco_unitario(base_centavos, desconto)</code>. Estratégias concretas:
-        <ul>
-            <li><code>PrecoInteira</code>: Valor integral (100% da base).</li>
-            <li><code>PrecoMeia</code>: 50% do valor base com arredondamento seguro.</li>
-            <li><code>PrecoPromocional</code>: Aplica percentual de desconto configurável no lote.</li>
-            <li><code>PrecoCortesia</code>: Retorna zero centavos (gratuito para convidados/imprensa).</li>
-        </ul>
-    </li>
-    <li><strong>Meios de Pagamento (<code>services/pagamento/src/meios.py</code>):</strong> <code>EstrategiaMeioPagamento</code> encapsula o processamento bancário para <code>MeioPix</code>, <code>MeioCartaoCredito</code>, <code>MeioBoleto</code> e <code>MeioCartaoRecusado</code>.</li>
+    <li><strong>Políticas de Precificação (<code>services/eventos/src/precos.py</code>):</strong> Classes <code>PrecoInteira</code>, <code>PrecoMeia</code>, <code>PrecoPromocional</code> e <code>PrecoCortesia</code>. O cálculo de meio-ingresso utiliza divisão inteira com arredondamento comercial superior (<code>(base + 1) // 2</code>), evitando divergência de centavos.</li>
+    <li><strong>Meios de Pagamento (<code>services/pagamento/src/meios.py</code>):</strong> <code>MeioPix</code>, <code>MeioCartaoCredito</code>, <code>MeioBoleto</code> e <code>MeioCartaoRecusado</code> (gatilho determinístico para demonstração da compensação da Saga).</li>
 </ul>
 
-<div class="code-box"><pre class="highlight"><span class="c1"># services/eventos/src/precos.py</span>
-<span class="k">class</span> <span class="nc">EstrategiaPreco</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+
+    <div class="code-window">
+        
+        <div class="code-header">
+            <div class="code-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <div class="code-title">services/eventos/src/precos.py</div>
+            <div class="code-lang">Python 3.12</div>
+        </div>
+        
+        <div class="code-body">
+            <pre class="highlight"><span class="k">class</span> <span class="nc">EstrategiaPreco</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nome</span><span class="p">:</span> <span class="n">PoliticaPreco</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nome</span> <span class="o">=</span> <span class="n">nome</span>
 
@@ -561,28 +911,43 @@ O padrão State é utilizado para modelar os ciclos de vida mais críticos do si
     <span class="k">def</span> <span class="nf">preco_unitario</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_centavos</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">desconto_percentual</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">pct</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">desconto_percentual</span><span class="p">))</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">base_centavos</span> <span class="o">*</span> <span class="p">(</span><span class="mi">100</span> <span class="o">-</span> <span class="n">pct</span><span class="p">)</span> <span class="o">+</span> <span class="mi">50</span><span class="p">)</span> <span class="o">//</span> <span class="mi">100</span>
-</pre></div>
+</pre>
+        </div>
+    </div>
+    
 
 <h2>4.3 Chain of Responsibility</h2>
 <p><span class="badge badge-behavioral">GoF Comportamental</span></p>
 <p>
-<strong>Intenção:</strong> Evitar o acoplamento do remetente de uma solicitação ao seu receptor, dando a mais de um objeto a oportunidade de tratar a solicitação. Encadear os objetos receptores e passar a solicitação ao longo da cadeia até que um objeto a trate.
+<strong>Intenção:</strong> Evitar acoplar o remetente de uma solicitação ao seu destinatário, dando a mais de um objeto a oportunidade de processar a requisição através de uma cadeia sequencial de manipuladores.
 </p>
 <p>
 <strong>Aplicação no ArenaHub:</strong>
-Na compra e reserva de ingressos, um pedido deve passar por uma série de verificações obrigatórias de negócio. Em <code>services/eventos/src/validacoes.py</code> e <code>services/ingressos/src/validacoes.py</code>, foi implementado o encadeamento:
-<ol>
-    <li><code>ValidadorEventoExiste</code>: Verifica se o evento está cadastrado.</li>
-    <li><code>ValidadorVendasAbertas</code>: Confirma se o evento está no estado <code>VENDAS_ABERTAS</code>.</li>
-    <li><code>ValidadorLoteAtivoEVigente</code>: Checa se o lote está ativo e se a data atual está dentro do intervalo <code>[inicio_vendas, fim_vendas]</code>.</li>
-    <li><code>ValidadorCapacidadeDisponivel</code>: Garante que <code>disponiveis >= quantidade</code>.</li>
-    <li><code>ValidadorLimitePorComprador</code>: Impede compras abusivas de cambistas (limite de 5 ingressos por CPF).</li>
-</ol>
-Cada elo herda de <code>EloValidacao</code> e invoca <code>self.proximo.validar(ctx)</code> somente se sua regra for satisfeita.
+Implementado em <code>services/eventos/src/validacoes.py</code> e <code>services/ingressos/src/validacoes.py</code>. Durante o processamento de compra e reserva, o pedido atravessa uma cadeia rigorosa de checagens:
 </p>
+<ol>
+    <li><code>ValidadorEventoExiste</code>: Verifica a existência do evento no banco local.</li>
+    <li><code>ValidadorVendasAbertas</code>: Checa se o evento está no estado <code>VENDAS_ABERTAS</code>.</li>
+    <li><code>ValidadorLoteAtivoEVigente</code>: Assegura que o lote está ativo e que o timestamp atual encontra-se dentro da janela de vendas.</li>
+    <li><code>ValidadorCapacidadeDisponivel</code>: Garante saldo suficiente no lote sem risco de <em>overbooking</em>.</li>
+    <li><code>ValidadorLimitePorComprador</code>: Limita o número máximo de ingressos por CPF para prevenir atuação de cambistas.</li>
+</ol>
 
-<div class="code-box"><pre class="highlight"><span class="c1"># services/eventos/src/validacoes.py</span>
-<span class="k">class</span> <span class="nc">EloValidacao</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+
+    <div class="code-window">
+        
+        <div class="code-header">
+            <div class="code-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <div class="code-title">services/eventos/src/validacoes.py</div>
+            <div class="code-lang">Python 3.12</div>
+        </div>
+        
+        <div class="code-body">
+            <pre class="highlight"><span class="k">class</span> <span class="nc">EloValidacao</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">proximo</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;EloValidacao&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -594,33 +959,47 @@ Cada elo herda de <code>EloValidacao</code> e invoca <code>self.proximo.validar(
     <span class="k">def</span> <span class="nf">validar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">ContextoReserva</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proximo</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">proximo</span><span class="o">.</span><span class="n">validar</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
-</pre></div>
+
+<span class="k">class</span> <span class="nc">ValidadorCapacidadeDisponivel</span><span class="p">(</span><span class="n">EloValidacao</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">validar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">ContextoReserva</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">ctx</span><span class="o">.</span><span class="n">itens</span><span class="p">:</span>
+            <span class="n">lote</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">evento</span><span class="o">.</span><span class="n">achar_lote</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">lote_id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">lote</span> <span class="ow">or</span> <span class="n">lote</span><span class="o">.</span><span class="n">disponiveis</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">item</span><span class="o">.</span><span class="n">quantidade</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">RegraNegocioViolada</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lote </span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">lote_id</span><span class="si">}</span><span class="s2"> nao possui lugares suficientes&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">validar</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+</pre>
+        </div>
+    </div>
+    
 
 <div class="page-break"></div>
 
 <h2>4.4 Command</h2>
 <p><span class="badge badge-behavioral">GoF Comportamental</span></p>
 <p>
-<strong>Intenção:</strong> Encapsular uma solicitação como um objeto, permitindo parametrizar clientes com diferentes solicitações, enfileirar solicitações e registrar o histórico das operações para auditoria e reversão.
+<strong>Intenção:</strong> Encapsular uma solicitação como um objeto, permitindo parametrizar clientes com diferentes ações, enfileirar operações e manter histórico auditável de execuções.
 </p>
 <p>
 <strong>Aplicação no ArenaHub:</strong>
-No microsserviço de <code>ingressos</code> (<code>services/ingressos/src/comandos.py</code>), todas as transações que alteram pedidos ou ingressos são implementadas como comandos:
-<code>ComandoReservar</code>, <code>ComandoPagar</code>, <code>ComandoCancelar</code>, <code>ComandoEstornar</code> e <code>ComandoValidarEntrada</code>. Cada comando executa sua lógica de negócio e persiste uma entrada imutável na tabela <code>historico_pedidos</code>, registrando o estado anterior, novo estado, timestamp e justificativa operacional.
+Em <code>services/ingressos/src/comandos.py</code>, todas as operações de mutação transacional sobre pedidos e ingressos são comandos auditáveis: <code>ComandoReservar</code>, <code>ComandoPagar</code>, <code>ComandoCancelar</code>, <code>ComandoEstornar</code> e <code>ComandoValidarEntrada</code> (check-in no portão da arena com prevenção estrita de leitura duplicada).
 </p>
 
-<div class="code-box"><pre class="highlight"><span class="c1"># services/ingressos/src/comandos.py</span>
-<span class="k">class</span> <span class="nc">ComandoPedido</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pedido_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">motivo</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pedido_id</span> <span class="o">=</span> <span class="n">pedido_id</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">motivo</span> <span class="o">=</span> <span class="n">motivo</span>
 
-    <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">executar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conn</span><span class="p">:</span> <span class="n">asyncpg</span><span class="o">.</span><span class="n">Connection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-
-<span class="k">class</span> <span class="nc">ComandoValidarEntrada</span><span class="p">(</span><span class="n">ComandoPedido</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Executa a validacao do ingresso no portao do evento (Check-in).&quot;&quot;&quot;</span>
+    <div class="code-window">
+        
+        <div class="code-header">
+            <div class="code-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <div class="code-title">services/ingressos/src/comandos.py</div>
+            <div class="code-lang">Python 3.12</div>
+        </div>
+        
+        <div class="code-body">
+            <pre class="highlight"><span class="k">class</span> <span class="nc">ComandoValidarEntrada</span><span class="p">(</span><span class="n">ComandoPedido</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check-in atômico no portão com prevenção contra uso duplicado de QR Code.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">codigo</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">usuario_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">papel</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">codigo</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">codigo</span> <span class="o">=</span> <span class="n">codigo</span>
@@ -643,20 +1022,36 @@ No microsserviço de <code>ingressos</code> (<code>services/ingressos/src/comand
         <span class="k">if</span> <span class="n">res</span> <span class="o">==</span> <span class="s2">&quot;UPDATE 1&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;aprovado&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;motivo&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;titular&quot;</span><span class="p">:</span> <span class="n">ing</span><span class="p">[</span><span class="s2">&quot;nome_titular&quot;</span><span class="p">]}</span>
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;aprovado&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;motivo&quot;</span><span class="p">:</span> <span class="s2">&quot;concorrencia de leitura: ja utilizado&quot;</span><span class="p">}</span>
-</pre></div>
+</pre>
+        </div>
+    </div>
+    
 
 <h2>4.5 Observer</h2>
 <p><span class="badge badge-behavioral">GoF Comportamental</span></p>
 <p>
-<strong>Intenção:</strong> Definir uma dependência um-para-muitos entre objetos, de modo que quando um objeto muda de estado, todos os seus dependentes são notificados e atualizados automaticamente.
+<strong>Intenção:</strong> Definir uma dependência um-para-muitos entre objetos para que, quando um objeto mudar de estado, todos os seus dependentes sejam notificados e atualizados automaticamente.
 </p>
 <p>
 <strong>Aplicação no ArenaHub:</strong>
-No microsserviço de <code>notificacoes</code> (<code>services/notificacoes/src/observer.py</code>), o padrão Observer desacopla a recepção de eventos do RabbitMQ da entrega multicanal para os participantes. A classe <code>DespachanteEventos</code> atua como Subject (Sujeito). Observadores especializados (<code>ObservadorCompra</code>, <code>ObservadorEstorno</code>, <code>ObservadorCancelamento</code>) inscrevem-se nos tópicos de interesse e são acionados assincronamente assim que o evento de mensageria é processado.
+No microsserviço de <code>notificacoes</code> (<code>services/notificacoes/src/observer.py</code>), o padrão Observer desacopla a recepção de eventos no RabbitMQ do despacho de avisos aos participantes. A classe <code>DespachanteEventos</code> atua como Subject, gerenciando a lista de observadores especializados (<code>ObservadorCompra</code>, <code>ObservadorEstorno</code>, <code>ObservadorCancelamento</code>).
 </p>
 
-<div class="code-box"><pre class="highlight"><span class="c1"># services/notificacoes/src/observer.py</span>
-<span class="k">class</span> <span class="nc">ObservadorEvento</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+
+    <div class="code-window">
+        
+        <div class="code-header">
+            <div class="code-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <div class="code-title">services/notificacoes/src/observer.py</div>
+            <div class="code-lang">Python 3.12</div>
+        </div>
+        
+        <div class="code-body">
+            <pre class="highlight"><span class="k">class</span> <span class="nc">ObservadorEvento</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span> <span class="nf">notificar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topico</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">payload</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
@@ -671,52 +1066,53 @@ No microsserviço de <code>notificacoes</code> (<code>services/notificacoes/src/
     <span class="k">async</span> <span class="k">def</span> <span class="nf">despachar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topico</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">payload</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">obs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observadores</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">topico</span><span class="p">,</span> <span class="p">[]):</span>
             <span class="k">await</span> <span class="n">obs</span><span class="o">.</span><span class="n">notificar</span><span class="p">(</span><span class="n">topico</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
-</pre></div>
+</pre>
+        </div>
+    </div>
+    
 
 <div class="page-break"></div>
 
 <h1>5. Padrões Arquiteturais de Sistemas Distribuídos</h1>
 
-<h2>5.1 Database-per-Service (Banco de Dados por Microsserviço)</h2>
+<h2>5.1 Database-per-Service</h2>
 <p><span class="badge badge-arch">Padrão Arquitetural</span></p>
 <p>
-Cada um dos quatro microsserviços de domínio e o API Gateway possuem seu próprio banco de dados relacional e usuário restrito no PostgreSQL:
-<code>eventos_db</code>, <code>ingressos_db</code>, <code>pagamento_db</code>, <code>notificacoes_db</code> e <code>gateway_db</code>.
-<strong>Regra estrita:</strong> É proibido qualquer comando <code>JOIN</code> entre tabelas de bancos distintos ou criação de Foreign Keys entre serviços. Toda referência externa é armazenada exclusivamente como UUID opaco, garantindo que o esquema de dados de um serviço evolua sem quebrar os demais.
+Cada um dos 4 microsserviços de domínio e o API Gateway possuem bancos de dados PostgreSQL completamente isolados: <code>eventos_db</code>, <code>ingressos_db</code>, <code>pagamento_db</code>, <code>notificacoes_db</code> e <code>gateway_db</code>. Não existem comandos <code>JOIN</code> entre bancos nem chaves estrangeiras trans-serviço. O compartilhamento de dados ocorre exclusivamente através de eventos imutáveis com JSON Schemas padronizados.
 </p>
 
-<h2>5.2 Event-Driven Architecture (EDA) e Publish/Subscribe</h2>
+<h2>5.2 Event-Driven Architecture (EDA) & Publish/Subscribe</h2>
 <p><span class="badge badge-arch">Padrão Arquitetural</span></p>
 <p>
-A comunicação inter-serviços baseia-se em eventos assíncronos trafegando via RabbitMQ através de um <strong>Topic Exchange</strong> unificado (<code>arenahub.events</code>). Filas duráveis com dead-letter configurada garantem que se um consumidor estiver desligado ou sobrecarregado, as mensagens permanecem retidas com segurança no broker.
+A comunicação assíncrona entre microsserviços é intermediada pelo RabbitMQ 3.13 através de um <strong>Topic Exchange</strong> unificado denominado <code>arenahub.events</code>. Filas duráveis exclusivas por serviço garantem que eventos de negócio não sejam perdidos caso um serviço esteja temporariamente indisponível.
 </p>
 
-<h2>5.3 Saga Coreografada com Transações Compensatórias</h2>
+<h2>5.3 Saga Coreografada com Compensações Automáticas</h2>
 <p><span class="badge badge-arch">Padrão Arquitetural</span></p>
 <p>
-Em sistemas distribuídos, manter transações ACID distribuídas (2PC) degrada gravemente a disponibilidade e o particionamento (Teorema CAP). O ArenaHub resolve a consistência eventual através do <strong>Padrão Saga Coreografada</strong>:
+Para gerenciar a transação de compra distribuída sem o custo e o bloqueio de transações de duas fases (2PC), o ArenaHub implementa uma <strong>Saga Coreografada</strong>:
 </p>
 <ul>
-    <li><strong>Caminho Feliz:</strong> <code>compra.solicitada.v1</code> (Ingressos) -> <code>lugares.reservados.v1</code> (Eventos) -> <code>pagamento.solicitado.v1</code> (Ingressos) -> <code>pagamento.aprovado.v1</code> (Pagamento) -> <code>ingresso.emitido.v1</code> (Ingressos) -> Notificação ao comprador.</li>
-    <li><strong>Caminho Compensatório (Rollback Distribuído):</strong> Se o cartão for recusado ou a compra tiver valor com 66 centavos, o serviço de Pagamento publica <code>pagamento.recusado.v1</code>. O serviço de Ingressos reage emitindo <code>pedido.cancelado.v1</code>. O serviço de Eventos consome o cancelamento e desfaz a reserva, <strong>devolvendo os lugares ao estoque de forma idempotente</strong>. O participante é devidamente avisado sobre a recusa.</li>
+    <li><strong>Fluxo Normal de Sucesso:</strong> Comprador inicia pedido &rarr; Ingressos emite <code>compra.solicitada.v1</code> &rarr; Eventos reserva lugares e emite <code>lugares.reservados.v1</code> &rarr; Ingressos solicita cobrança com <code>pagamento.solicitado.v1</code> &rarr; Pagamento aprova cobrança com <code>pagamento.aprovado.v1</code> &rarr; Ingressos gera ingressos digitais com <code>ingresso.emitido.v1</code> &rarr; Notificações avisa o comprador.</li>
+    <li><strong>Fluxo de Compensação (Rollback Distribuído):</strong> Se o cartão for recusado ou a compra terminar em 66 centavos, o serviço de Pagamento publica <code>pagamento.recusado.v1</code>. O serviço de Ingressos consome a recusa, cancela o pedido e emite <code>pedido.cancelado.v1</code>. O serviço de Eventos consome o cancelamento e desfaz a reserva, <strong>devolvendo os lugares ao estoque de forma idempotente</strong>.</li>
 </ul>
 
 <h2>5.4 Transactional Outbox Pattern</h2>
 <p><span class="badge badge-arch">Padrão Arquitetural</span></p>
 <p>
-Garante que uma alteração no banco e a emissão do respectivo evento de negócio ocorram de forma 100% atômica. O evento é gravado na tabela local <code>outbox</code> dentro da mesma transação SQL que altera a entidade de domínio. Um worker em background em cada serviço lê a outbox com <code>SELECT ... FOR UPDATE SKIP LOCKED</code>, publica a mensagem no RabbitMQ e a remove da outbox somente após confirmação do broker.
+Para eliminar o risco de perda de mensagens entre o commit relacional no PostgreSQL e a publicação no broker, cada serviço implementa a tabela <code>outbox</code>. A mutação de dados e a gravação do evento ocorrem na mesma transação atômica SQL. Um worker assíncrono em segundo plano lê os eventos da outbox com bloqueio de concorrência (<code>SELECT FOR UPDATE SKIP LOCKED</code>), publica no RabbitMQ e apaga o registro após a confirmação de recebimento do broker (*At-Least-Once Delivery*).
 </p>
 
 <h2>5.5 Circuit Breaker (Disjuntor de Falhas)</h2>
 <p><span class="badge badge-arch">Padrão Arquitetural</span></p>
 <p>
-Localizado no API Gateway (<code>gateway/src/breaker.py</code>), protege o ecossistema contra falhas em cascata. Ao detectar 3 falhas consecutivas de comunicação (timeout ou connection refused) com qualquer microsserviço, o disjuntor do serviço específico transita de <code>FECHADO</code> para <code>ABERTO</code>. Requisições subsequentes são barradas na borda imediatamente com código <code>HTTP 502 Bad Gateway</code> e payload estruturado, evitando enfileiramento de requisições perdidas. Após 8 segundos, o disjuntor entra em <code>MEIO_ABERTO</code> e envia uma requisição sonda para testar se o serviço se restabeleceu.
+Localizado no API Gateway, monitora a taxa de falhas consecutivas de cada microsserviço. Ao atingir o limiar de 3 falhas consecutivas, o circuito transita para <code>ABERTO</code> e passa a responder imediatamente com <code>HTTP 502 Bad Gateway</code> estruturado, impedindo que requisições presas saturem conexões. Após 8 segundos, o circuito transita para <code>MEIO_ABERTO</code> para enviar uma requisição sonda de teste e avaliar a restauração do serviço.
 </p>
 
-<h2>5.6 Dead Letter Queue (DLQ) e Consumidores Idempotentes</h2>
+<h2>5.6 Dead Letter Queue (DLQ) & Idempotência</h2>
 <p><span class="badge badge-arch">Padrão Arquitetural</span></p>
 <p>
-Mensagens com falha permanente não travam a fila principal nem somem em silêncio: são encaminhadas automaticamente para a DLQ do respectivo serviço (ex.: <code>notificacoes.events.dlq</code>). Além disso, cada consumidor mantém uma tabela <code>eventos_processados</code> (armazenando <code>evento_id</code> como Primary Key). Repetições de entrega por oscilação de rede são ignoradas com segurança.
+Mensagens com falhas de processamento irrecuperáveis são roteadas automaticamente para filas mortas (ex.: <code>notificacoes.events.dlq</code>). O administrador pode inspecionar e disparar o reprocessamento seguro via API (<code>POST /api/&lt;servico&gt;/dlq/reprocessar</code>). Para garantir segurança contra mensagens reentregues, cada serviço mantém uma tabela <code>eventos_processados</code> para filtragem de duplicidades.
 </p>
 
 <div class="page-break"></div>
@@ -737,7 +1133,7 @@ Mensagens com falha permanente não travam a fila principal nem somem em silênc
             <td><span class="badge badge-creation">GoF Criação</span></td>
             <td><strong>Factory Method</strong></td>
             <td><code>services/eventos/src/precos.py</code><br><code>services/pagamento/src/meios.py</code></td>
-            <td>Instanciação desacoplada de estratégias de precificação de ingressos e de cobrança por meio de pagamento.</td>
+            <td>Instanciação desacoplada de estratégias de precificação de ingressos e de meios de cobrança.</td>
         </tr>
         <tr>
             <td><span class="badge badge-creation">GoF Criação</span></td>
@@ -749,37 +1145,37 @@ Mensagens com falha permanente não travam a fila principal nem somem em silênc
             <td><span class="badge badge-structural">GoF Estrutural</span></td>
             <td><strong>Composite</strong></td>
             <td><code>services/eventos/src/estrutura.py</code></td>
-            <td>Composição em árvore de Evento -> Setores -> Lotes, com cálculo recursivo de capacidade e disponibilidade.</td>
+            <td>Composição em árvore de Evento &rarr; Setores &rarr; Lotes, com cálculo recursivo de lotação e disponibilidade.</td>
         </tr>
         <tr>
             <td><span class="badge badge-structural">GoF Estrutural</span></td>
             <td><strong>Adapter</strong></td>
             <td><code>services/pagamento/src/provedor.py</code><br><code>services/notificacoes/src/canais.py</code></td>
-            <td>Adaptação das interfaces bancárias externas e de canais de notificação (email simulado) ao domínio interno.</td>
+            <td>Adaptação das APIs bancárias externas e de canais de notificação aos contratos internos de domínio.</td>
         </tr>
         <tr>
             <td><span class="badge badge-structural">GoF Estrutural</span></td>
             <td><strong>Facade</strong></td>
             <td><code>gateway/src/main.py</code></td>
-            <td>Ponto unificado de entrada e roteamento para o frontend React sobre a malha de 4 microsserviços.</td>
+            <td>Ponto unificado de entrada e roteamento para o frontend React sobre os 4 microsserviços.</td>
         </tr>
         <tr>
             <td><span class="badge badge-structural">GoF Estrutural</span></td>
-            <td><strong>Proxy</strong></td>
+            <td><strong>Protection Proxy</strong></td>
             <td><code>gateway/src/main.py</code></td>
-            <td>Protection Proxy para autenticação JWT, expurgo de headers maliciosos e injeção de identidade autorizada.</td>
+            <td>Validação de token JWT, sanitização de cabeçalhos adulteráveis e injeção de identidade autorizada.</td>
         </tr>
         <tr>
             <td><span class="badge badge-behavioral">GoF Comportamental</span></td>
             <td><strong>State</strong></td>
             <td><code>services/eventos/src/estados.py</code><br><code>services/ingressos/src/estados.py</code><br><code>gateway/src/breaker.py</code></td>
-            <td>Máquinas de estado explícitas para o ciclo do Evento, ciclo do Pedido/Ingresso e do Disjuntor (Circuit Breaker).</td>
+            <td>Máquinas de estado explícitas para ciclo do Evento, ciclo do Pedido/Ingresso e do Circuit Breaker.</td>
         </tr>
         <tr>
             <td><span class="badge badge-behavioral">GoF Comportamental</span></td>
             <td><strong>Strategy</strong></td>
             <td><code>services/eventos/src/precos.py</code><br><code>services/pagamento/src/meios.py</code></td>
-            <td>Políticas intercambiáveis de cálculo de valor do ingresso (Meia, Promo, etc.) e processamento de pagamentos.</td>
+            <td>Políticas intercambiáveis de cálculo de ingresso (Meia, Promo, etc.) e processamento de pagamentos.</td>
         </tr>
         <tr>
             <td><span class="badge badge-behavioral">GoF Comportamental</span></td>
@@ -791,12 +1187,12 @@ Mensagens com falha permanente não travam a fila principal nem somem em silênc
             <td><span class="badge badge-behavioral">GoF Comportamental</span></td>
             <td><strong>Command</strong></td>
             <td><code>services/ingressos/src/comandos.py</code></td>
-            <td>Encapsulamento de ações transacionais com histórico auditável de pedidos e validação atômica de check-in.</td>
+            <td>Comandos transacionais com histórico auditável de pedidos e validação atômica de check-in no portão.</td>
         </tr>
         <tr>
             <td><span class="badge badge-behavioral">GoF Comportamental</span></td>
             <td><strong>Observer</strong></td>
-            <td><code>services/notificacoes/src/observer.py</code><br><code>services/notificacoes/src/observadores.py</code></td>
+            <td><code>services/notificacoes/src/observer.py</code></td>
             <td>Inscrição e despacho desacoplado de eventos recebidos do RabbitMQ para emissão de avisos multicanal.</td>
         </tr>
         <tr>
@@ -809,19 +1205,19 @@ Mensagens com falha permanente não travam a fila principal nem somem em silênc
             <td><span class="badge badge-arch">Arquitetural</span></td>
             <td><strong>Saga Coreografada</strong></td>
             <td><code>services/*/src/saga.py</code></td>
-            <td>Consistência eventual distribuída com compensações automáticas em caso de recusa de cobrança ou timeout.</td>
+            <td>Consistência eventual distribuída com compensações automáticas em caso de recusa ou timeout.</td>
         </tr>
         <tr>
             <td><span class="badge badge-arch">Arquitetural</span></td>
             <td><strong>Transactional Outbox</strong></td>
             <td><code>services/*/src/outbox.py</code></td>
-            <td>Gravação atômica do evento de domínio na mesma transação SQL relacional com entrega segura no RabbitMQ.</td>
+            <td>Gravação atômica do evento de domínio na mesma transação SQL com publicação segura no broker.</td>
         </tr>
         <tr>
             <td><span class="badge badge-arch">Arquitetural</span></td>
             <td><strong>Circuit Breaker</strong></td>
             <td><code>gateway/src/breaker.py</code></td>
-            <td>Proteção contra saturação e falha em cascata no API Gateway com fallback rápido e sondas de recuperação.</td>
+            <td>Proteção contra falhas em cascata no API Gateway com fallback rápido e sondas de recuperação.</td>
         </tr>
         <tr>
             <td><span class="badge badge-arch">Arquitetural</span></td>

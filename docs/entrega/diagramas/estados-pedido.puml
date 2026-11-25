@@ -6,31 +6,38 @@ skinparam stateBorderColor #1E3A8A
 
 title ArenaHub — Máquina de Estados do Pedido e Ingresso (GoF State)
 
-state "Ciclo do Pedido" as Pedido {
+state "Ciclo do Pedido (services/ingressos/src/estados.py)" as Pedido {
   [*] --> PENDENTE : compra.solicitada (HTTP 202)
+  
   PENDENTE --> RESERVADO : lugares.reservados
   PENDENTE --> RECUSADO : reserva.recusada
 
   RESERVADO --> AGUARDANDO_PAGAMENTO : pagamento.solicitado
+  
   AGUARDANDO_PAGAMENTO --> PAGO : pagamento.aprovado
-  AGUARDANDO_PAGAMENTO --> RECUSADO : pagamento.recusado (Compensação)
-  AGUARDANDO_PAGAMENTO --> CANCELADO : expiração (120s) / timeout
+  AGUARDANDO_PAGAMENTO --> RECUSADO : pagamento.recusado\n(Dispara Compensação)
+  AGUARDANDO_PAGAMENTO --> EXPIRADO : Timeout / Varredor (120s)\n(Dispara Compensação)
+  AGUARDANDO_PAGAMENTO --> CANCELADO : Cancelamento manual
 
   PAGO --> CONCLUIDO : ingresso.emitido
-  CONCLUIDO --> ESTORNADO : cancelamento de evento / estorno
+
+  CONCLUIDO --> CANCELADO : evento.cancelado / estorno
 
   CONCLUIDO --> [*]
   RECUSADO --> [*]
+  EXPIRADO --> [*]
   CANCELADO --> [*]
-  ESTORNADO --> [*]
 }
 
-state "Ciclo do Ingresso Digital" as Ingresso {
+state "Ciclo do Ingresso Digital (services/ingressos/src/estados.py)" as Ingresso {
   [*] --> EMITIDO : Pedido CONCLUIDO
-  EMITIDO --> UTILIZADO : Check-in na catraca (1ª leitura)
-  EMITIDO --> INVALIDADO : Cancelamento / Estorno
+
+  EMITIDO --> UTILIZADO : validar() / Check-in (1ª leitura na catraca)
+  EMITIDO --> CANCELADO : cancelar() / Desistência do participante
+  EMITIDO --> INVALIDADO : invalidar() / Cancelamento do evento ou fraude
 
   UTILIZADO --> [*]
+  CANCELADO --> [*]
   INVALIDADO --> [*]
 }
 
